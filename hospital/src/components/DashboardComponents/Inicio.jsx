@@ -8,7 +8,7 @@ const Inicio = ({ usuario, rangoActual, setSubSeccion }) => {
       {/* Tarjeta 1 - Centros Médicos: Visible para todos */}
       <button 
         style={styles.tarjetaBoton}
-        onClick={() => setSubSeccion('centrosMedicos')}
+        onClick={() => setSubSeccion('centros Médicos')}
       >
         Centros Médicos
       </button>
