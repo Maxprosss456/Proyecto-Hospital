@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { styles } from './ComponentsStyles'; 
-
 import Inicio from './DashboardComponents/Inicio';
 import Informes from './DashboardComponents/Informes';
 import Norma from './DashboardComponents/Norma';

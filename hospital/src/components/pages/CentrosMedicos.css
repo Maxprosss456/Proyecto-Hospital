@@ -6,89 +6,93 @@
   box-sizing: border-box;
 }
 
-/* Header Verde Superior */
+/* Encabezado */
 .centros-header {
-  background-color: #0d833c; /* Verde del banner superior */
+  background-color: #0c823d;
   display: flex;
   align-items: center;
-  position: relative;
-  padding: 10px 20px;
+  padding: 8px 15px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .btn-back {
-  background-color: #075827; /* Verde más oscuro para el botón */
-  color: white;
-  border: 1px solid #000;
+  background-color: #075827;
+  color: #ffffff;
+  border: 1px solid #000000;
   border-radius: 4px;
-  width: 35px;
-  height: 35px;
-  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .header-title {
-  color: white;
+  color: #ffffff;
   margin: 0 auto;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: bold;
   letter-spacing: 1px;
 }
 
-/* Lista de Tarjetas */
+/* Contenedor de lista */
 .centros-list {
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px;
+  overflow-y: auto;
 }
 
-/* Tarjeta individual */
+/* Tarjetas */
 .hospital-card {
-  background-color: #ececec; /* Gris claro de fondo de la tarjeta */
-  border: 1.5px solid #000;
-  border-radius: 15px;
-  padding: 20px;
+  background-color: #e6e6e6;
+  border: 1.5px solid #000000;
+  border-radius: 18px;
+  padding: 20px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .hospital-info h3 {
   margin-top: 0;
   margin-bottom: 12px;
+  margin-left: 30px;
   font-size: 1.1rem;
   font-weight: bold;
 }
 
 .hospital-info ul {
-  list-style-type: disc;
-  padding-left: 20px;
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
 .hospital-info li {
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   font-size: 0.95rem;
-  font-weight: 600;
-  color: #111;
+  font-weight: bold;
+  color: #000000;
 }
 
-/* Imagen del hospital */
-.hospital-image-container {
-  width: 250px;
-  height: 150px;
-  flex-shrink: 0;
+/* Recuadro simulador de imagen */
+.hospital-image-box {
+  width: 240px;
+  height: 140px;
+  background-color: #888888;
+  border: 2px solid #000000;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 0.85rem;
 }
 
-.hospital-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid #000;
+/* Filtro rojizo para la segunda imagen según la referencia */
+.hospital-image-box.red-filter {
+  background-color: #702f3b;
 }
