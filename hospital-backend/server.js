@@ -82,7 +82,16 @@ app.get('/api/urgencias', async (req, res) => {
             return res.status(500).json({ error: 'Error al consultar informes' });
         }
 
-        return res.json(informes);
+        const respuestaFormateada = informes.map((inf) => ({
+            Id: inf.id,
+            Titulo: `Informe #${inf.id}`,
+            Hospital_Nombre: `Hospital ID: ${inf.id_hospital}`,
+            Ubicacion: 'Consulta externa',
+            Informe: inf.informe,
+            Remitente: inf.usuarios ? `${inf.usuarios.nombre} ${inf.usuarios.apellido}` : 'Desconocido'
+        }));
+
+        return res.json(respuestaFormateada);
     } catch (err) {
         console.error('Error crítico en Informes:', err);
         return res.status(500).json({ error: 'Error crítico en el servidor' });
