@@ -412,9 +412,9 @@ const CentrosMedicos = () => {
     <div >
 
       {/* Contenido principal */}
-      <div style={styles.mainContent}>
+
         {renderContent()}
-      </div>
+
     </div>
   );
 };
