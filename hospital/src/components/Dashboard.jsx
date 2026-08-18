@@ -76,6 +76,8 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
           </div>
         )}
 
+        {/* SELECCIONADOR DE SUBSECCIONES, AGREGAR PAGINAS AQUI */}
+
         <div style={subSeccion === 'urgencias' ? styles.pizarraGrisUrgencias : styles.pizarraGris}>
           
           {subSeccion === 'inicio' && (
