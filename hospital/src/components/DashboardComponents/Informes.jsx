@@ -3,13 +3,31 @@ import { styles } from '../ComponentsStyles';
 
 const Informes = () => {
   const [listaUrgencias, setListaUrgencias] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     fetch('http://localhost:5000/api/urgencias')
-      .then((res) => res.json())
-      .then((data) => setListaUrgencias(data))
-      .catch((err) => console.error('Error cargando urgencias:', err));
+      .then((res) => {
+        if (!res.ok) throw new Error('Error en la respuesta del servidor');
+        return res.json();
+      })
+      .then((data) => {
+        setListaUrgencias(data);
+        setCargando(false);
+      })
+      .catch((err) => {
+        console.error('Error cargando urgencias:', err);
+        setCargando(false);
+      });
   }, []);
+
+  if (cargando) {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+        Cargando informes de urgencia...
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px', color: '#333' }}>
@@ -24,8 +42,11 @@ const Informes = () => {
           </ul>
         </div>
       ))}
+
       {listaUrgencias.length === 0 && (
-        <p style={{ textAlign: 'center', color: '#666' }}>No hay situaciones urgentes reportadas.</p>
+        <p style={{ textAlign: 'center', color: '#666' }}>
+          No hay situaciones urgentes reportadas.
+        </p>
       )}
     </div>
   );
