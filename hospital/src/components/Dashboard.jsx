@@ -11,8 +11,9 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
   const rangoActual = usuario?.rango || 'sin_rango';
 
   return (
+    
     <div style={styles.contenedorPrincipal}>
-      
+      {/* barra lateral */}
       <aside style={styles.sidebar}>
         <div style={styles.bloqueSuperiorMarca}>
           <div style={styles.contenedorLogo}>
@@ -62,6 +63,10 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
         </button>
       </aside>
 
+
+
+
+      {/* parte central */}
       <main style={styles.areaContenido}>
         
         {subSeccion !== 'inicio' && (

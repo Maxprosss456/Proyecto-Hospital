@@ -9,8 +9,6 @@ export const styles = {
     overflow: 'hidden'
   },
 
-
-
   sidebar: {
     width: '270px',
     backgroundColor: '#00C86F', 
@@ -29,9 +27,11 @@ export const styles = {
     width: '100%',
     marginBottom: '20px'
   },
-  contenedorLogo: { 
-    width: '200px',
-    height: '200px', 
+  contenedorLogo: {
+    maxWidth: '200px',
+    maxHeight: '200px', 
+    width: '20vw',
+    height: '20vw', 
     display: 'flex',
     justifyContent: 'center', 
     alignItems: 'center', 
@@ -46,7 +46,7 @@ export const styles = {
   },
   textoHospital: {
     color: '#FFFFFF',
-    fontSize: '42px',
+    fontSize: '3vw',
     fontWeight: 'bold',
     marginTop: '15px',
     marginBottom: '20px',
@@ -73,8 +73,8 @@ export const styles = {
   enlaceMenu: {
     width: '100%',
     color: '#FFFFFF',
-    padding: '16px 0',
-    fontSize: '20px',
+    padding: '2vh 5vh 2vh 5vh',
+    fontSize: '10px',
     fontWeight: 'bold',
     textAlign: 'center',
     letterSpacing: '1px',
