@@ -28,8 +28,8 @@ export const styles = {
     marginBottom: '20px'
   },
   contenedorLogo: {
-    maxWidth: '200px',
-    maxHeight: '200px', 
+    maxWidth: '50px',
+    maxHeight: '50px', 
     width: '20vw',
     height: '20vw', 
     display: 'flex',
@@ -103,6 +103,7 @@ export const styles = {
     backgroundColor: '#FFFFFF',
     paddingTop: '2vh',
     paddingLeft: '2vw',
+    paddingRight: '2vw',
     display: 'flex',
     flexDirection: 'column',
     boxSizing: 'border-box',
@@ -113,13 +114,13 @@ export const styles = {
   contenedorTarjetas: {
     display: 'flex',
     gap: '2vw',
-    width: '50vw'
+    width: '100%'
   },
 
   tarjetaBoton: {
     flex: 1,
     maxWidth: '50%',
-    height: '200px',
+    height: '10%',
     backgroundColor: '#00C86F',
     color: '#FFFFFF',
     fontSize: '3vw',
