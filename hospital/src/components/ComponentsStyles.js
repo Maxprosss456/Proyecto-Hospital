@@ -103,6 +103,7 @@ export const styles = {
     backgroundColor: '#FFFFFF',
     paddingTop: '2vh',
     paddingLeft: '2vw',
+    paddingRight: '2vw',
     display: 'flex',
     flexDirection: 'column',
     boxSizing: 'border-box',
@@ -113,7 +114,7 @@ export const styles = {
   contenedorTarjetas: {
     display: 'flex',
     gap: '2vw',
-    width: '50vw'
+    width: '100%'
   },
 
   tarjetaBoton: {
