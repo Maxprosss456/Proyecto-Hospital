@@ -90,32 +90,20 @@ export const styles = {
     fontSize: '14px',
     fontWeight: 'bold'
   },
+
   areaContenido: {
     flexGrow: 1,
     backgroundColor: '#FFFFFF',
-    padding: '30px',
+    paddingTop: '2vh',
+    paddingLeft: '2vw',
     display: 'flex',
     boxSizing: 'border-box'
   },
-
-
-
-  pizarraGris: {
-    flexGrow: 1,
-    backgroundColor: '#EFEFEF',
-    borderRadius: '25px',
-    border: '2px solid #333333',
-    padding: '40px',
-    width: '70vw',
-    boxSizing: 'border-box'
-  },
-
-
 
   contenedorTarjetas: {
     display: 'flex',
-    gap: '30px',
-    width: '100%'
+    gap: '2vw',
+    width: '50vw'
   },
 
   tarjetaBoton: {
@@ -124,7 +112,7 @@ export const styles = {
     height: '200px',
     backgroundColor: '#00C86F',
     color: '#FFFFFF',
-    fontSize: '32px',
+    fontSize: '3vw',
     border: '3px solid #000000',
     borderRadius: '40px',
     cursor: 'pointer',
@@ -136,24 +124,9 @@ export const styles = {
     boxShadow: '0px 4px 10px rgba(0,0,0,0.15)'
   },
 
-  barraSuperiorUrgencias: {
-    width: '100%',
-    height: '60px',
-    backgroundColor: '#0B8236',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 20px',
-    boxSizing: 'border-box',
-    position: 'absolute',
-    top: 0,
-    left: '270px',
-    width: 'calc(100vw - 270px)'
-  },
-
   botonVolver: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     color: '#000000',
-    border: 'none',
     width: '40px',
     height: '40px',
     borderRadius: '8px',
