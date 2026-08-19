@@ -4,6 +4,7 @@ import Inicio from './DashboardComponents/Inicio';
 import Informes from './DashboardComponents/Informes';
 import Norma from './DashboardComponents/Norma';
 import Configuracion from './DashboardComponents/Configuracion';
+import CentrosMedicos from './pages/CentrosMedicos';
 
 const Dashboard = ({ usuario, alCerrarSesion }) => {
   const [subSeccion, setSubSeccion] = useState('inicio');
@@ -74,8 +75,6 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
             ⤺
           </button>  
         )}
-
-        
           
           {/* COLOCAR SECCIONES AQUI */}
 
@@ -89,6 +88,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
 
           {subSeccion === 'configuracion' && <Configuracion />}
 
+          {subSeccion === 'centros médicos' && <CentrosMedicos />}
 
       </main>
 
