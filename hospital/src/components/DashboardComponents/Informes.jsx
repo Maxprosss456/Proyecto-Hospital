@@ -8,21 +8,7 @@ const styles = {
     fontFamily: 'Arial, sans-serif',
     backgroundColor: '#f5f7fa',
   },
-  sidebar: {
-    width: '220px',
-    backgroundColor: '#2c3e50',
-    color: '#ecf0f1',
-    padding: '20px 0',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  sidebarTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '30px',
-    color: '#fff',
-  },
+
   navItem: {
     width: '100%',
     padding: '12px 20px',
@@ -215,14 +201,6 @@ const GeneradorInformes = () => {
   // Renderizado principal
   return (
     <div style={styles.container}>
-      {/* Barra lateral */}
-      <div style={styles.sidebar}>
-        <div style={styles.sidebarTitle}>Hospital</div>
-        <div style={styles.navItem}>INICIO</div>
-        <div style={{ ...styles.navItem, backgroundColor: '#34495e' }}>INFORMES</div>
-        <div style={styles.navItem}>NORMA</div>
-        <div style={styles.navItem}>CONFIGURACIÓN</div>
-      </div>
 
       {/* Contenido principal */}
       <div style={styles.mainContent}>
