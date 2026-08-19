@@ -70,7 +70,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
       <main style={styles.areaContenido}>
         
         {subSeccion !== 'inicio' && (
-          <button onClick={() => setSubSeccion('inicio')}>
+          <button style={styles.botonVolver} onClick={() => setSubSeccion('inicio')}>
             ⤺
           </button>  
         )}

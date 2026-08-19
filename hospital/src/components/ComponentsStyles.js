@@ -152,12 +152,12 @@ export const styles = {
 
   botonVolver: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    color: '#FFFFFF',
+    color: '#000000',
     border: 'none',
     width: '40px',
     height: '40px',
     borderRadius: '8px',
-    fontSize: '24px',
+    fontSize: '3vw',
     cursor: 'pointer',
     display: 'flex',
     justifyContent: 'center',
