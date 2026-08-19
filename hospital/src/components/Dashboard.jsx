@@ -70,18 +70,15 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
       <main style={styles.areaContenido}>
         
         {subSeccion !== 'inicio' && (
-          <div style={styles.barraSuperiorUrgencias}>
-            <button style={styles.botonVolver} onClick={() => setSubSeccion('inicio')}>
-              &lt;
-            </button>
-            <span style={styles.tituloSeccionSuperior}>
-              {subSeccion.toUpperCase()}
-            </span>
-          </div>
+          <button onClick={() => setSubSeccion('inicio')}>
+            ⤺
+          </button>  
         )}
 
-        <div style={subSeccion === 'urgencias' ? styles.pizarraGrisUrgencias : styles.pizarraGris}>
+        
           
+          {/* COLOCAR SECCIONES AQUI */}
+
           {subSeccion === 'inicio' && (
             <Inicio usuario={usuario} rangoActual={rangoActual} setSubSeccion={setSubSeccion} />
           )}
@@ -92,7 +89,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
 
           {subSeccion === 'configuracion' && <Configuracion />}
 
-        </div>
+
       </main>
 
     </div>
