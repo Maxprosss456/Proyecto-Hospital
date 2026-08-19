@@ -45,7 +45,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                 style={subSeccion === 'inicio' ? styles.enlaceActivo : styles.enlaceMenu} 
                 onClick={() => setSubSeccion('inicio')}
               >
-                🏠 INICIO
+                ⌂ INICIO
               </div>
               
               {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
@@ -53,7 +53,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                   style={subSeccion === 'urgencias' ? styles.enlaceActivo : styles.enlaceMenu} 
                   onClick={() => setSubSeccion('urgencias')}
                 >
-                 📄 INFORMES
+                 🗎 INFORMES
                 </div>
               )}
               
@@ -62,7 +62,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                   style={subSeccion === 'norma' ? styles.enlaceActivo : styles.enlaceMenu} 
                   onClick={() => setSubSeccion('norma')}
                 >
-                 📏 NORMA
+                 🕮 NORMAS
                 </div>
               )}
               
@@ -71,7 +71,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                   style={subSeccion === 'configuracion' ? styles.enlaceActivo : styles.enlaceMenu} 
                   onClick={() => setSubSeccion('configuracion')}
                 >
-                 ⚙️ CONFIGURACIÓN
+                 ⛭ CONFIGURACIÓN
                 </div>
               )}
             </nav>
