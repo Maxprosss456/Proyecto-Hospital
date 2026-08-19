@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Estilos en objeto para mantener todo en un solo archivo
 const styles = {
@@ -30,9 +30,6 @@ const styles = {
     cursor: 'pointer',
     borderBottom: '1px solid #34495e',
     transition: 'background 0.2s',
-  },
-  navItemHover: {
-    backgroundColor: '#34495e',
   },
   mainContent: {
     flex: 1,
@@ -100,9 +97,6 @@ const styles = {
     cursor: 'pointer',
     transition: 'background 0.2s',
   },
-  doctorCardHover: {
-    background: '#ecf0f1',
-  },
   detailSection: {
     marginTop: '20px',
   },
@@ -133,100 +127,135 @@ const styles = {
     marginTop: '15px',
     borderRadius: '4px',
   },
-  sanctionActions: {
-    marginTop: '20px',
+  loading: {
+    textAlign: 'center',
+    padding: '50px',
+    fontSize: '18px',
+    color: '#555',
+  },
+  error: {
+    textAlign: 'center',
+    padding: '50px',
+    fontSize: '18px',
+    color: '#e74c3c',
   },
 };
 
-// Datos de ejemplo (simulados)
-const initialData = {
-  centros: [
-    {
-      id: 1,
-      nombre: 'Hospital N1',
-      provincia: 'Buenos Aires',
-      localidad: 'La Plata',
-      codigoPostal: '1900',
-      direccion: 'Calle 1 N° 123',
-      medicos: [
-        {
-          id: 101,
-          nombre: 'Dr. Juan Pérez',
-          especialidad: 'Ginecología',
-          infoGeneral: 'Especialista en ginecología y obstetricia',
-          pacientesACargo: 12,
-          archivosTitulos: 'Diploma UBA, Especialidad en Ginecología',
-          datosBiometricos: 'Huella digital registrada',
-          estadoActual: 'Sancionado',
-          tiempoAntiguedad: '5 años',
-          tipoMedico: 'Permanente',
-          historialPacientes: 'Paciente A, Paciente B, Paciente C',
-          sanciones: [
-            {
-              id: 201,
-              tipo: 'Suspensión temporal',
-              duracion: '30 días',
-              fechaInicio: '15/04/2026',
-              fechaFinalizacion: '15/05/2026',
-              nombre: 'Añejo Hernandez',
-              cargo: 'Ginecólogo',
-              sector: 'Ginecología',
-              estado: 'Activo',
-              motivo: 'El profesional incurrió en demoras reiteradas en la carga de informes médicos, afectando la continuidad asistencial.',
-            },
-          ],
-        },
-        {
-          id: 102,
-          nombre: 'Dr. Manuel Rodríguez',
-          especialidad: 'Cirugía General',
-          infoGeneral: 'Especialista en cirugía abdominal y laparoscópica',
-          pacientesACargo: 8,
-          archivosTitulos: 'Diploma UNLP, Residencia en Cirugía',
-          datosBiometricos: 'Huella digital registrada',
-          estadoActual: 'Activo',
-          tiempoAntiguedad: '3 años',
-          tipoMedico: 'Temporal',
-          historialPacientes: 'Paciente X, Paciente Y',
-          sanciones: [],
-        },
-      ],
-    },
-    {
-      id: 2,
-      nombre: 'Hospital N2',
-      provincia: 'Córdoba',
-      localidad: 'Córdoba',
-      codigoPostal: '5000',
-      direccion: 'Avenida 2 N° 456',
-      medicos: [
-        {
-          id: 201,
-          nombre: 'Dra. Laura Fernández',
-          especialidad: 'Pediatría',
-          infoGeneral: 'Especialista en pediatría y neonatología',
-          pacientesACargo: 15,
-          archivosTitulos: 'Diploma UNC, Especialidad en Pediatría',
-          datosBiometricos: 'Huella digital registrada',
-          estadoActual: 'Activo',
-          tiempoAntiguedad: '4 años',
-          tipoMedico: 'Permanente',
-          historialPacientes: 'Paciente M, Paciente N',
-          sanciones: [],
-        },
-      ],
-    },
-  ],
-};
-
 const CentrosMedicos = () => {
-  const [data] = useState(initialData);
+  // Estado para los datos
+  const [hospitales, setHospitales] = useState([]);
+  const [posiciones, setPosiciones] = useState([]); // Para obtener nombre de cargo
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Estado de navegación
   const [vista, setVista] = useState('lista'); // 'lista', 'detalleCentro', 'detalleMedico', 'detalleSancion'
   const [centroSeleccionado, setCentroSeleccionado] = useState(null);
   const [medicoSeleccionado, setMedicoSeleccionado] = useState(null);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
 
-  // Navegación
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    // El compañero debe reemplazar esta URL con la ruta real de la API
+    // que devuelva los hospitales con sus médicos, sanciones y posiciones.
+    // Se espera un objeto con las claves: hospitales, posiciones (opcional)
+    // y cada hospital debe tener una lista de médicos (usuarios) con sus sanciones.
+    const fetchData = async () => {
+      try {
+        // Simulación de datos según la estructura de la BD
+        // En producción, reemplazar con fetch(URL_API)
+        const mockData = {
+          hospitales: [
+            {
+              id: 1,
+              nombre: 'Hospital N1',
+              telefono: '221-1234567',
+              email: 'contacto@hospital1.com',
+              codpostal: 1900,
+              logo: '/hospital_logo.ico',
+              medicos: [
+                {
+                  id: 101,
+                  usuario: 'jperez',
+                  nombre: 'Juan',
+                  apellido: 'Pérez',
+                  posicion: 3, // ID de posición (ej: Ginecólogo)
+                  dni: 12345678,
+                  antiguedad: 5,
+                  telefono: '221-1111111',
+                  email: 'jperez@hospital1.com',
+                  direccion: 'Calle 1 N° 123',
+                  sanciones: [
+                    {
+                      id: 201,
+                      id_sancionado: 'jperez',
+                      sancion: 'El profesional incurrió en demoras reiteradas en la carga de informes médicos, afectando la continuidad asistencial. Sanción: suspensión por 30 días.',
+                    },
+                  ],
+                },
+                {
+                  id: 102,
+                  usuario: 'mrodriguez',
+                  nombre: 'Manuel',
+                  apellido: 'Rodríguez',
+                  posicion: 2, // Ej: Cirujano
+                  dni: 87654321,
+                  antiguedad: 3,
+                  telefono: '221-2222222',
+                  email: 'mrodriguez@hospital1.com',
+                  direccion: 'Calle 2 N° 456',
+                  sanciones: [],
+                },
+              ],
+            },
+            {
+              id: 2,
+              nombre: 'Hospital N2',
+              telefono: '351-1234567',
+              email: 'contacto@hospital2.com',
+              codpostal: 5000,
+              logo: '/hospital_logo.ico',
+              medicos: [
+                {
+                  id: 201,
+                  usuario: 'lfernandez',
+                  nombre: 'Laura',
+                  apellido: 'Fernández',
+                  posicion: 4, // Ej: Pediatra
+                  dni: 11223344,
+                  antiguedad: 4,
+                  telefono: '351-1111111',
+                  email: 'lfernandez@hospital2.com',
+                  direccion: 'Avenida 2 N° 789',
+                  sanciones: [],
+                },
+              ],
+            },
+          ],
+          posiciones: [
+            { id: 1, posicion: 'Director' },
+            { id: 2, posicion: 'Cirujano' },
+            { id: 3, posicion: 'Ginecólogo' },
+            { id: 4, posicion: 'Pediatra' },
+          ],
+        };
+
+        // Simular tiempo de carga
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        setHospitales(mockData.hospitales);
+        setPosiciones(mockData.posiciones);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error al cargar los datos:', err);
+        setError('No se pudieron cargar los centros médicos. Intente nuevamente.');
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Funciones de navegación
   const irALista = () => {
     setVista('lista');
     setCentroSeleccionado(null);
@@ -249,6 +278,12 @@ const CentrosMedicos = () => {
     setVista('detalleSancion');
   };
 
+  // Obtener nombre de posición a partir del ID
+  const getPosicionNombre = (posicionId) => {
+    const pos = posiciones.find((p) => p.id === posicionId);
+    return pos ? pos.posicion : 'Cargo no especificado';
+  };
+
   // Renderizar lista de centros
   const renderLista = () => (
     <>
@@ -256,17 +291,22 @@ const CentrosMedicos = () => {
         <h2 style={styles.headerTitle}>Centros Médicos</h2>
       </div>
       <div style={styles.cardGrid}>
-        {data.centros.map((centro) => (
+        {hospitales.map((centro) => (
           <div
             key={centro.id}
             style={styles.card}
             onClick={() => irADetalleCentro(centro)}
           >
             <div style={styles.cardTitle}>{centro.nombre}</div>
-            <div style={styles.cardField}><span style={styles.label}>Provincia:</span> {centro.provincia}</div>
-            <div style={styles.cardField}><span style={styles.label}>Localidad:</span> {centro.localidad}</div>
-            <div style={styles.cardField}><span style={styles.label}>Código Postal:</span> {centro.codigoPostal}</div>
-            <div style={styles.cardField}><span style={styles.label}>Dirección:</span> {centro.direccion}</div>
+            <div style={styles.cardField}>
+              <span style={styles.label}>Teléfono:</span> {centro.telefono}
+            </div>
+            <div style={styles.cardField}>
+              <span style={styles.label}>Email:</span> {centro.email}
+            </div>
+            <div style={styles.cardField}>
+              <span style={styles.label}>Código Postal:</span> {centro.codpostal}
+            </div>
           </div>
         ))}
       </div>
@@ -276,31 +316,43 @@ const CentrosMedicos = () => {
   // Renderizar detalle de centro (lista de médicos)
   const renderDetalleCentro = () => {
     if (!centroSeleccionado) return null;
+    const { medicos = [], ...centro } = centroSeleccionado;
     return (
       <>
         <div style={styles.header}>
           <button style={styles.backButton} onClick={irALista}>←</button>
-          <h2 style={styles.headerTitle}>{centroSeleccionado.nombre}</h2>
+          <h2 style={styles.headerTitle}>{centro.nombre}</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div>
-          <p><span style={styles.label}>Provincia:</span> {centroSeleccionado.provincia}</p>
-          <p><span style={styles.label}>Localidad:</span> {centroSeleccionado.localidad}</p>
-          <p><span style={styles.label}>Código Postal:</span> {centroSeleccionado.codigoPostal}</p>
-          <p><span style={styles.label}>Dirección:</span> {centroSeleccionado.direccion}</p>
+          <p>
+            <span style={styles.label}>Teléfono:</span> {centro.telefono}
+          </p>
+          <p>
+            <span style={styles.label}>Email:</span> {centro.email}
+          </p>
+          <p>
+            <span style={styles.label}>Código Postal:</span> {centro.codpostal}
+          </p>
         </div>
         <h3 style={{ marginTop: '20px' }}>Cuerpo Médico</h3>
-        {centroSeleccionado.medicos.map((medico) => (
-          <div
-            key={medico.id}
-            style={styles.doctorCard}
-            onClick={() => irADetalleMedico(medico)}
-          >
-            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{medico.nombre}</div>
-            <div>{medico.especialidad}</div>
-            <div style={{ color: '#555' }}>{medico.infoGeneral}</div>
-          </div>
-        ))}
+        {medicos.length === 0 ? (
+          <p>No hay médicos registrados en este centro.</p>
+        ) : (
+          medicos.map((medico) => (
+            <div
+              key={medico.id}
+              style={styles.doctorCard}
+              onClick={() => irADetalleMedico(medico)}
+            >
+              <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
+                {medico.nombre} {medico.apellido}
+              </div>
+              <div>{getPosicionNombre(medico.posicion)}</div>
+              <div style={{ color: '#555' }}>{medico.email}</div>
+            </div>
+          ))
+        )}
       </>
     );
   };
@@ -309,36 +361,59 @@ const CentrosMedicos = () => {
   const renderDetalleMedico = () => {
     if (!medicoSeleccionado) return null;
     const medico = medicoSeleccionado;
+    // Obtener sanciones del médico
+    const sanciones = medico.sanciones || [];
     return (
       <>
         <div style={styles.header}>
-          <button style={styles.backButton} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
-          <h2 style={styles.headerTitle}>{medico.nombre}</h2>
+          <button
+            style={styles.backButton}
+            onClick={() => irADetalleCentro(centroSeleccionado)}
+          >
+            ←
+          </button>
+          <h2 style={styles.headerTitle}>
+            {medico.nombre} {medico.apellido}
+          </h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div style={styles.detailSection}>
-          <div style={styles.detailRow}><span style={styles.label}>Especialidad:</span> {medico.especialidad}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Información General:</span> {medico.infoGeneral}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Pacientes a cargo:</span> {medico.pacientesACargo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Archivos y documentación de títulos:</span> {medico.archivosTitulos}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Datos biométricos:</span> {medico.datosBiometricos}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Estado actual:</span> {medico.estadoActual}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Tiempo de antigüedad:</span> {medico.tiempoAntiguedad}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Tipo de médico:</span> {medico.tipoMedico}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Historial de pacientes:</span> {medico.historialPacientes}</div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Usuario:</span> {medico.usuario}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Cargo:</span> {getPosicionNombre(medico.posicion)}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>DNI:</span> {medico.dni}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Antigüedad:</span> {medico.antiguedad} años
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Teléfono:</span> {medico.telefono}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Email:</span> {medico.email}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Dirección:</span> {medico.direccion}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Estado actual:</span>{' '}
+            {sanciones.length > 0 ? 'Sancionado' : 'Activo'}
+          </div>
         </div>
         <div style={{ marginTop: '20px' }}>
           <h4>Sanciones</h4>
-          {medico.sanciones.length === 0 ? (
+          {sanciones.length === 0 ? (
             <p>No hay sanciones registradas.</p>
           ) : (
-            medico.sanciones.map((sancion) => (
+            sanciones.map((sancion) => (
               <div key={sancion.id} style={styles.sanctionBox}>
-                <div><span style={styles.label}>Tipo:</span> {sancion.tipo}</div>
-                <div><span style={styles.label}>Duración:</span> {sancion.duracion}</div>
-                <div><span style={styles.label}>Fecha de inicio:</span> {sancion.fechaInicio}</div>
-                <div><span style={styles.label}>Fecha de finalización:</span> {sancion.fechaFinalizacion}</div>
-                <div><span style={styles.label}>Estado:</span> {sancion.estado}</div>
+                <div>
+                  <span style={styles.label}>Motivo:</span> {sancion.sancion}
+                </div>
                 <button
                   style={{ ...styles.button, marginTop: '10px' }}
                   onClick={() => irADetalleSancion(sancion)}
@@ -353,7 +428,9 @@ const CentrosMedicos = () => {
           <button style={styles.button}>Cambiar cargo</button>
           <button style={styles.button}>Asignar paciente</button>
           <button style={styles.button}>Desasignar paciente</button>
-          <button style={{ ...styles.button, ...styles.buttonDanger }}>Dar de baja</button>
+          <button style={{ ...styles.button, ...styles.buttonDanger }}>
+            Dar de baja
+          </button>
         </div>
       </>
     );
@@ -363,34 +440,73 @@ const CentrosMedicos = () => {
   const renderDetalleSancion = () => {
     if (!sancionSeleccionada) return null;
     const sancion = sancionSeleccionada;
+    // Como la tabla solo tiene un campo de texto, mostramos el motivo completo
+    // y agregamos placeholders para los campos que no existen en la BD.
     return (
       <>
         <div style={styles.header}>
-          <button style={styles.backButton} onClick={() => irADetalleMedico(medicoSeleccionado)}>←</button>
+          <button
+            style={styles.backButton}
+            onClick={() => irADetalleMedico(medicoSeleccionado)}
+          >
+            ←
+          </button>
           <h2 style={styles.headerTitle}>Configuración de sanción</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div>
-          <div style={styles.detailRow}><span style={styles.label}>Tipo/s de sanción:</span> {sancion.tipo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Duración:</span> {sancion.duracion}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Fecha de inicio:</span> {sancion.fechaInicio}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Fecha de finalización:</span> {sancion.fechaFinalizacion}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Nombre:</span> {sancion.nombre}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {sancion.cargo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Sector:</span> {sancion.sector}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Estado:</span> {sancion.estado}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Motivos de la sanción:</span></div>
-          <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '5px', marginTop: '5px' }}>
-            {sancion.motivo}
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Tipo/s de sanción:</span>{' '}
+            No especificado
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Duración:</span> No especificado
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Fecha de inicio:</span> No especificado
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Fecha de finalización:</span> No especificado
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Nombre del sancionado:</span>{' '}
+            {medicoSeleccionado ? `${medicoSeleccionado.nombre} ${medicoSeleccionado.apellido}` : 'No disponible'}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Cargo:</span>{' '}
+            {medicoSeleccionado ? getPosicionNombre(medicoSeleccionado.posicion) : 'No disponible'}
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Sector:</span> No especificado
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Estado:</span> Activo
+          </div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Motivos de la sanción:</span>
+          </div>
+          <div
+            style={{
+              backgroundColor: '#f8f9fa',
+              padding: '15px',
+              borderRadius: '5px',
+              marginTop: '5px',
+            }}
+          >
+            {sancion.sancion}
           </div>
         </div>
-        <div style={styles.sanctionActions}>
+        <div style={{ marginTop: '20px' }}>
           <h4>Acciones disponibles</h4>
           <button style={styles.button}>Actualizar informe de sanción</button>
           <button style={styles.button}>Modificar duración</button>
-          <button style={{ ...styles.button, ...styles.buttonDanger }}>Bloquear acceso completo</button>
+          <button style={{ ...styles.button, ...styles.buttonDanger }}>
+            Bloquear acceso completo
+          </button>
           <button style={styles.button}>Agregar observación</button>
-          <button style={{ ...styles.button, ...styles.buttonSuccess }}>Levantar sanción</button>
+          <button style={{ ...styles.button, ...styles.buttonSuccess }}>
+            Levantar sanción
+          </button>
         </div>
       </>
     );
@@ -398,6 +514,12 @@ const CentrosMedicos = () => {
 
   // Renderizar contenido según vista
   const renderContent = () => {
+    if (loading) {
+      return <div style={styles.loading}>Cargando centros médicos...</div>;
+    }
+    if (error) {
+      return <div style={styles.error}>{error}</div>;
+    }
     switch (vista) {
       case 'lista':
         return renderLista();
@@ -419,14 +541,14 @@ const CentrosMedicos = () => {
         <div style={styles.sidebarTitle}>Hospital</div>
         <div style={styles.navItem}>INICIO</div>
         <div style={styles.navItem}>INFORMES</div>
-        <div style={{ ...styles.navItem, backgroundColor: '#34495e' }}>NORMA</div>
+        <div style={{ ...styles.navItem, backgroundColor: '#34495e' }}>
+          NORMA
+        </div>
         <div style={styles.navItem}>CONFIGURACIÓN</div>
       </div>
 
       {/* Contenido principal */}
-      <div style={styles.mainContent}>
-        {renderContent()}
-      </div>
+      <div style={styles.mainContent}>{renderContent()}</div>
     </div>
   );
 };
