@@ -1,0 +1,63 @@
+/* Dashboard.css */
+
+/* Transición suave para la barra lateral y contenedor */
+.sidebar-responsive {
+  transition: width 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+/* Ajustes generales */
+.area-contenido-responsive {
+  position: relative;
+  width: 100%;
+}
+
+/* MEDIA QUERIES PARA CELULARES (Menor a 768px) */
+@media (max-width: 768px) {
+  .contenedor-principal-responsive {
+    position: relative;
+  }
+
+  /* La barra se superpone (Overlay/Drawer) */
+  .sidebar-responsive {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Cuando se abre en móvil, cubre toda la pantalla */
+  .sidebar-responsive.abierta {
+    width: 100% !important;
+  }
+
+  /* Cuando está colapsada en celular, ocupa solo un borde para pulsar el logo */
+  .sidebar-responsive.colapsada {
+    width: 70px !important;
+  }
+
+  /* El contenido ocupa el 100% real del teléfono */
+  .area-contenido-responsive {
+    padding: 15px !important;
+  }
+
+  .pizarra-responsive {
+    width: 100% !important;
+    padding: 15px !important;
+  }
+
+  .barra-superior-responsive {
+    left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Las tarjetas de opciones se apilan verticalmente en celular */
+  .tarjetas-responsive {
+    flex-direction: column !important;
+  }
+
+  .tarjeta-boton-responsive {
+    max-width: 100% !important;
+  }
+}

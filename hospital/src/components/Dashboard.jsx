@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { styles } from './ComponentsStyles'; 
+import './Dashboard.css'; // Importación de estilos responsivos
 
 import Inicio from './DashboardComponents/Inicio';
 import Informes from './DashboardComponents/Informes';
@@ -8,65 +9,84 @@ import Configuracion from './DashboardComponents/Configuracion';
 
 const Dashboard = ({ usuario, alCerrarSesion }) => {
   const [subSeccion, setSubSeccion] = useState('inicio');
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const rangoActual = usuario?.rango || 'sin_rango';
 
   return (
-    <div style={styles.contenedorPrincipal}>
+    <div style={styles.contenedorPrincipal} className="contenedor-principal-responsive">
       
-      <aside style={styles.sidebar}>
-        <div style={styles.bloqueSuperiorMarca}>
+      {/* Sidebar adaptable */}
+      <aside 
+        className={`sidebar-responsive ${menuAbierto ? 'abierta' : 'colapsada'}`}
+        style={{
+          ...styles.sidebar,
+          width: menuAbierto ? '270px' : '70px'
+        }}
+      >
+        
+        {/* Toggle al pulsar el logo */}
+        <div 
+          style={{ ...styles.bloqueSuperiorMarca, cursor: 'pointer' }} 
+          onClick={() => setMenuAbierto(!menuAbierto)}
+        >
           <div style={styles.contenedorLogo}>
             <img src={usuario.logo} alt="Logo Hospital" style={styles.logo} />
           </div>
-          <h1 style={styles.textoHospital}>{usuario.hospital}</h1>
+          {menuAbierto && <h1 style={styles.textoHospital}>{usuario.hospital}</h1>}
         </div>
         
-        <nav style={styles.menuNav}>
-          <div 
-            style={subSeccion === 'inicio' ? styles.enlaceActivo : styles.enlaceMenu} 
-            onClick={() => setSubSeccion('inicio')}
-          >
-            INICIO
-          </div>
-          
-          {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
-            <div 
-              style={subSeccion === 'urgencias' ? styles.enlaceActivo : styles.enlaceMenu} 
-              onClick={() => setSubSeccion('urgencias')}
-            >
-              INFORMES
-            </div>
-          )}
-          
-          {['Admin', 'Director Médico'].includes(rangoActual) && (
-            <div 
-              style={subSeccion === 'norma' ? styles.enlaceActivo : styles.enlaceMenu} 
-              onClick={() => setSubSeccion('norma')}
-            >
-              NORMA
-            </div>
-          )}
-          
-          {['Admin', 'Director Médico'].includes(rangoActual) && (
-            <div 
-              style={subSeccion === 'configuracion' ? styles.enlaceActivo : styles.enlaceMenu} 
-              onClick={() => setSubSeccion('configuracion')}
-            >
-              CONFIGURACIÓN
-            </div>
-          )}
-        </nav>
+        {/* Opciones del menú */}
+        {menuAbierto && (
+          <>
+            <nav style={styles.menuNav}>
+              <div 
+                style={subSeccion === 'inicio' ? styles.enlaceActivo : styles.enlaceMenu} 
+                onClick={() => setSubSeccion('inicio')}
+              >
+                INICIO
+              </div>
+              
+              {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
+                <div 
+                  style={subSeccion === 'urgencias' ? styles.enlaceActivo : styles.enlaceMenu} 
+                  onClick={() => setSubSeccion('urgencias')}
+                >
+                  INFORMES
+                </div>
+              )}
+              
+              {['Admin', 'Director Médico'].includes(rangoActual) && (
+                <div 
+                  style={subSeccion === 'norma' ? styles.enlaceActivo : styles.enlaceMenu} 
+                  onClick={() => setSubSeccion('norma')}
+                >
+                  NORMA
+                </div>
+              )}
+              
+              {['Admin', 'Director Médico'].includes(rangoActual) && (
+                <div 
+                  style={subSeccion === 'configuracion' ? styles.enlaceActivo : styles.enlaceMenu} 
+                  onClick={() => setSubSeccion('configuracion')}
+                >
+                  CONFIGURACIÓN
+                </div>
+              )}
+            </nav>
 
-        <button onClick={alCerrarSesion} style={styles.botonSalir}>
-          Cerrar Sesión
-        </button>
+            <button onClick={alCerrarSesion} style={styles.botonSalir}>
+              Cerrar Sesión
+            </button>
+          </>
+        )}
       </aside>
 
-      <main style={styles.areaContenido}>
+      {/* Contenido Principal */}
+      <main style={styles.areaContenido} className="area-contenido-responsive">
         
         {subSeccion !== 'inicio' && (
-          <div style={styles.barraSuperiorUrgencias}>
+          <div style={styles.barraSuperiorUrgencias} className="barra-superior-responsive">
             <button style={styles.botonVolver} onClick={() => setSubSeccion('inicio')}>
               &lt;
             </button>
@@ -76,8 +96,10 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
           </div>
         )}
 
-        <div style={subSeccion === 'urgencias' ? styles.pizarraGrisUrgencias : styles.pizarraGris}>
-          
+        <div 
+          style={subSeccion === 'urgencias' ? styles.pizarraGrisUrgencias : styles.pizarraGris}
+          className="pizarra-responsive"
+        >
           {subSeccion === 'inicio' && (
             <Inicio usuario={usuario} rangoActual={rangoActual} setSubSeccion={setSubSeccion} />
           )}
@@ -87,7 +109,6 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
           {subSeccion === 'norma' && <Norma />}
 
           {subSeccion === 'configuracion' && <Configuracion />}
-
         </div>
       </main>
 
