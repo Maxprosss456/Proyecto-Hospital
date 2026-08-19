@@ -1,47 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useTheme } from "../../context/ThemeContext";
 
-const STORAGE_KEY = "config-sistema";
-
-function cargarConfigGuardada() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { modoOscuro: false, fontIndex: 1 };
-    return JSON.parse(raw);
-  } catch {
-    return { modoOscuro: false, fontIndex: 1 };
-  }
-}
+// Factor de escala real para cada tamaño (Chica / Mediana / Grande)
+const ESCALA_FUENTE = { 0: 0.875, 1: 1, 2: 1.15 };
 
 export default function Configuracion() {
-  const [modoOscuro, setModoOscuro] = useState(false);
-  const [fontIndex, setFontIndex] = useState(1); // 0=Chica, 1=Mediana, 2=Grande
+  const { modoOscuro, setModoOscuro, fontIndex, setFontIndex, guardarConfig } =
+    useTheme();
   const [guardado, setGuardado] = useState(false);
 
-  // Al montar, levanta lo último guardado
-  useEffect(() => {
-    const cfg = cargarConfigGuardada();
-    setModoOscuro(cfg.modoOscuro);
-    setFontIndex(cfg.fontIndex);
-  }, []);
-
   const handleGuardar = () => {
-    const cfg = { modoOscuro, fontIndex };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    guardarConfig();
     // TODO: si tenés backend, acá también harías el POST/PUT correspondiente
     setGuardado(true);
     setTimeout(() => setGuardado(false), 1500);
   };
 
   const c = modoOscuro ? colorsOscuro : colorsClaro;
+  const s = ESCALA_FUENTE[fontIndex]; // factor de escala actual
 
   return (
     <div style={{ ...styles.card, backgroundColor: c.cardBg }}>
       {/* Header: título + botón Guardar Cambios */}
       <div style={styles.headerRow}>
-        <h1 style={{ ...styles.titulo, color: c.textPrimary }}>
+        <h1 style={{ ...styles.titulo, fontSize: 24 * s, color: c.textPrimary }}>
           Configuración del sistema
         </h1>
-        <button onClick={handleGuardar} style={styles.botonGuardar}>
+        <button
+          onClick={handleGuardar}
+          style={{ ...styles.botonGuardar, fontSize: 14 * s }}
+        >
           {guardado ? "¡Guardado!" : "Guardar Cambios"}
         </button>
       </div>
@@ -54,13 +42,13 @@ export default function Configuracion() {
           borderColor: c.border,
         }}
       >
-        <h2 style={{ ...styles.subtitulo, color: c.textPrimary }}>
+        <h2 style={{ ...styles.subtitulo, fontSize: 18 * s, color: c.textPrimary }}>
           Preferencias de Interfaz
         </h2>
 
         {/* Modo de Visualización */}
         <div style={styles.filaModo}>
-          <span style={{ fontWeight: 600, color: c.textPrimary }}>
+          <span style={{ fontWeight: 600, fontSize: 16 * s, color: c.textPrimary }}>
             Modo de Visualización
           </span>
 
@@ -78,7 +66,9 @@ export default function Configuracion() {
               >
                 {!modoOscuro && <span style={styles.radioInner} />}
               </span>
-              <span style={{ color: c.textPrimary }}>Claro (Predeterminado)</span>
+              <span style={{ fontSize: 15 * s, color: c.textPrimary }}>
+                Claro (Predeterminado)
+              </span>
             </button>
 
             <button
@@ -94,7 +84,7 @@ export default function Configuracion() {
               >
                 {modoOscuro && <span style={styles.radioInner} />}
               </span>
-              <span style={{ color: c.textPrimary }}>Oscuro</span>
+              <span style={{ fontSize: 15 * s, color: c.textPrimary }}>Oscuro</span>
             </button>
           </div>
         </div>
@@ -104,6 +94,7 @@ export default function Configuracion() {
           <span
             style={{
               fontWeight: 600,
+              fontSize: 16 * s,
               display: "block",
               marginBottom: 8,
               color: c.textPrimary,
@@ -127,7 +118,7 @@ export default function Configuracion() {
               <span
                 key={label}
                 style={{
-                  fontSize: 14,
+                  fontSize: 14 * s,
                   fontWeight: fontIndex === i ? 700 : 400,
                   color: fontIndex === i ? c.textPrimary : c.textSecondary,
                 }}
@@ -177,7 +168,6 @@ const styles = {
     gap: 12,
   },
   titulo: {
-    fontSize: 24,
     fontWeight: 700,
     margin: 0,
   },
@@ -189,7 +179,6 @@ const styles = {
     borderRadius: 8,
     border: "none",
     cursor: "pointer",
-    fontSize: 14,
   },
   innerCard: {
     border: "1px solid",
@@ -198,7 +187,6 @@ const styles = {
     transition: "background-color 0.2s ease, border-color 0.2s ease",
   },
   subtitulo: {
-    fontSize: 18,
     fontWeight: 700,
     marginTop: 0,
     marginBottom: 16,
@@ -224,7 +212,6 @@ const styles = {
     border: "none",
     cursor: "pointer",
     padding: 0,
-    fontSize: 15,
   },
   radioOuter: {
     width: 18,
