@@ -6,6 +6,7 @@ import Inicio from './DashboardComponents/Inicio';
 import Informes from './DashboardComponents/Informes';
 import Norma from './DashboardComponents/Norma';
 import Configuracion from './DashboardComponents/Configuracion';
+import CentrosMedicos from './pages/CentrosMedicos';
 
 const Dashboard = ({ usuario, alCerrarSesion }) => {
   const [subSeccion, setSubSeccion] = useState('inicio');
@@ -88,7 +89,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
         {subSeccion !== 'inicio' && (
           <div style={styles.barraSuperiorUrgencias} className="barra-superior-responsive">
             <button style={styles.botonVolver} onClick={() => setSubSeccion('inicio')}>
-              &lt;
+              ⤺
             </button>
             <span style={styles.tituloSeccionSuperior}>
               {subSeccion.toUpperCase()}
@@ -100,6 +101,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
           style={subSeccion === 'urgencias' ? styles.pizarraGrisUrgencias : styles.pizarraGris}
           className="pizarra-responsive"
         >
+          {/* COLOCAR SECCIONES AQUI */}
           {subSeccion === 'inicio' && (
             <Inicio usuario={usuario} rangoActual={rangoActual} setSubSeccion={setSubSeccion} />
           )}
@@ -109,6 +111,8 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
           {subSeccion === 'norma' && <Norma />}
 
           {subSeccion === 'configuracion' && <Configuracion />}
+
+          {subSeccion === 'centros médicos' && <CentrosMedicos />}
         </div>
       </main>
 

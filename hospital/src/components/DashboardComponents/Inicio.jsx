@@ -1,13 +1,14 @@
 import React from 'react';
 import { styles } from '../ComponentsStyles';
+import CentrosMedicos from '../pages/CentrosMedicos';
 
 const Inicio = ({ usuario, rangoActual, setSubSeccion }) => {
   return (
     <div style={styles.contenedorTarjetas}>
       {/* Tarjeta 1 - Centros Médicos: Visible para todos */}
       <button 
-        style={styles.tarjetaBoton} 
-        onClick={() => alert(`Abriendo centros médicos asociados a: ${usuario.hospital}`)}
+        style={styles.tarjetaBoton}
+        onClick={() => setSubSeccion('centros médicos')}
       >
         Centros Médicos
       </button>

@@ -27,10 +27,11 @@ export const styles = {
     width: '100%',
     marginBottom: '20px'
   },
-
-  contenedorLogo: { 
-    width: '50px',
-    height: '50px', 
+  contenedorLogo: {
+    maxWidth: '200px',
+    maxHeight: '200px', 
+    width: '20vw',
+    height: '20vw', 
     display: 'flex',
     justifyContent: 'center', 
     alignItems: 'center', 
@@ -47,7 +48,7 @@ export const styles = {
 
   textoHospital: {
     color: '#FFFFFF',
-    fontSize: '28px',
+    fontSize: '3vw',
     fontWeight: 'bold',
     marginTop: '15px',
     marginBottom: '20px',
@@ -77,8 +78,8 @@ export const styles = {
   enlaceMenu: {
     width: '100%',
     color: '#FFFFFF',
-    padding: '16px 0',
-    fontSize: '18px',
+    padding: '2vh 5vh 2vh 5vh',
+    fontSize: '10px',
     fontWeight: 'bold',
     textAlign: 'center',
     letterSpacing: '1px',
@@ -100,27 +101,19 @@ export const styles = {
   areaContenido: {
     flexGrow: 1,
     backgroundColor: '#FFFFFF',
-    padding: '30px',
+    paddingTop: '2vh',
+    paddingLeft: '2vw',
     display: 'flex',
     flexDirection: 'column',
     boxSizing: 'border-box',
     overflowY: 'auto'
   },
 
-  pizarraGris: {
-    flexGrow: 1,
-    backgroundColor: '#EFEFEF',
-    borderRadius: '25px',
-    border: '2px solid #333333',
-    padding: '40px',
-    width: '100%',
-    boxSizing: 'border-box'
-  },
 
   contenedorTarjetas: {
     display: 'flex',
-    gap: '30px',
-    width: '100%'
+    gap: '2vw',
+    width: '50vw'
   },
 
   tarjetaBoton: {
@@ -129,7 +122,7 @@ export const styles = {
     height: '200px',
     backgroundColor: '#00C86F',
     color: '#FFFFFF',
-    fontSize: '32px',
+    fontSize: '3vw',
     border: '3px solid #000000',
     borderRadius: '40px',
     cursor: 'pointer',
@@ -141,25 +134,13 @@ export const styles = {
     boxShadow: '0px 4px 10px rgba(0,0,0,0.15)'
   },
 
-  barraSuperiorUrgencias: {
-    width: '100%',
-    height: '60px',
-    backgroundColor: '#0B8236',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 20px',
-    boxSizing: 'border-box',
-    marginBottom: '20px'
-  },
-
   botonVolver: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    color: '#FFFFFF',
-    border: 'none',
+    color: '#000000',
     width: '40px',
     height: '40px',
     borderRadius: '8px',
-    fontSize: '24px',
+    fontSize: '3vw',
     cursor: 'pointer',
     display: 'flex',
     justifyContent: 'center',
