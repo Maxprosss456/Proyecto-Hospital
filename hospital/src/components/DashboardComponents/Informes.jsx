@@ -200,10 +200,10 @@ const GeneradorInformes = () => {
 
   // Renderizado principal
   return (
-    <div style={styles.container}>
+    <div>
 
       {/* Contenido principal */}
-      <div style={styles.mainContent}>
+      
         <div style={styles.header}>
           <h2 style={styles.headerTitle}>Generador de Informes</h2>
         </div>
@@ -263,8 +263,8 @@ const GeneradorInformes = () => {
             </table>
           </div>
         )}
-      </div>
     </div>
+    
   );
 };
 

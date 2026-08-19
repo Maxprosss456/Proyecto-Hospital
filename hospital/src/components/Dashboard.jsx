@@ -98,8 +98,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
         )}
 
         <div 
-          style={subSeccion === 'urgencias' ? styles.pizarraGrisUrgencias : styles.pizarraGris}
-          className="pizarra-responsive"
+          
         >
           {/* COLOCAR SECCIONES AQUI */}
           {subSeccion === 'inicio' && (
