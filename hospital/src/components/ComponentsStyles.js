@@ -28,8 +28,8 @@ export const styles = {
     marginBottom: '20px'
   },
   contenedorLogo: {
-    maxWidth: '200px',
-    maxHeight: '200px', 
+    maxWidth: '50px',
+    maxHeight: '50px', 
     width: '20vw',
     height: '20vw', 
     display: 'flex',
@@ -119,7 +119,7 @@ export const styles = {
   tarjetaBoton: {
     flex: 1,
     maxWidth: '50%',
-    height: '200px',
+    height: '10%',
     backgroundColor: '#00C86F',
     color: '#FFFFFF',
     fontSize: '3vw',

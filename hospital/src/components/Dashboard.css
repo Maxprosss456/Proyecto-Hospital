@@ -15,6 +15,7 @@
 /* MEDIA QUERIES PARA CELULARES (Menor a 768px) */
 @media (max-width: 768px) {
   .contenedor-principal-responsive {
+    padding-left: 70px;
     position: relative;
   }
 
