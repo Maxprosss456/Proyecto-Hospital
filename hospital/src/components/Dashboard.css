@@ -61,3 +61,21 @@
     max-width: 100% !important;
   }
 }
+
+@media (max-width: 768px) {
+  /* ... tus estilos anteriores en el media query ... */
+
+  /* Apila las tarjetas verticalmente en pantallas pequeñas */
+  .contenedor-tarjetas-responsive {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  /* Permite que cada tarjeta ocupe el 100% del ancho disponible */
+  .tarjeta-responsive {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 120px !important; /* Altura más cómoda para celulares */
+    font-size: 22px !important; /* Ajuste del texto para que no desborde */
+  }
+}
