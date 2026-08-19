@@ -1,76 +1,116 @@
-import React from 'react';
+import { useState } from "react";
 
-const Configuracion = () => {
-  const estilosLocales = {
-    contenedorNormas: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-      padding: '20px',
-      height: '100%',
-      boxSizing: 'border-box',
-      overflowY: 'auto' 
-    },
-    tituloPrincipal: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      color: '#000000',
-      marginBottom: '5px',
-      fontFamily: 'sans-serif',
-    },
-    subtituloSeccion: {
-      fontSize: '20px',
-      fontWeight: '500',
-      color: '#111111',
-      marginBottom: '10px',
-      fontFamily: 'sans-serif'
-    },
-    cajaTextoScroll: {
-      backgroundColor: '#FFFFFF',
-      border: '1px solid #CCCCCC',
-      borderRadius: '8px',
-      padding: '15px',
-      boxSizing: 'border-box',
-      color: '#333333',
-      fontFamily: 'monospace',
-      fontSize: '13px',
-      textAlign: 'justify',
-      height: '150px',
-      overflowY: 'scroll'
-    }
+const FONT_SIZES = ["chica", "mediana", "grande"];
+
+export default function Configuracion() {
+  const [modoOscuro, setModoOscuro] = useState(false);
+  const [fontIndex, setFontIndex] = useState(1); // 0=Chica, 1=Mediana, 2=Grande
+  const [guardado, setGuardado] = useState(false);
+
+  const handleGuardar = () => {
+    // TODO: acá deberías persistir { modoOscuro, tamanoFuente: FONT_SIZES[fontIndex] }
+    // en tu backend/localStorage según corresponda.
+    setGuardado(true);
+    setTimeout(() => setGuardado(false), 1500);
   };
 
+  const cardBg = modoOscuro ? "bg-[#2b2b2b]" : "bg-[#e9e9e9]";
+  const innerBg = modoOscuro ? "bg-[#3a3a3a]" : "bg-white";
+  const border = modoOscuro ? "border-[#4a4a4a]" : "border-gray-200";
+  const textPrimary = modoOscuro ? "text-white" : "text-gray-900";
+  const textSecondary = modoOscuro ? "text-gray-300" : "text-gray-600";
+
   return (
-    <div style={estilosLocales.contenedorNormas}>
-      
-      <h1 style={estilosLocales.tituloPrincipal}>Normas y cumplimiento legal</h1>
-
-      {/* BLOQUE 1: Reglamento General de Salud y Seguridad */}
-      <div>
-        <h2 style={estilosLocales.subtituloSeccion}>Reglamento General de Salud y Seguridad</h2>
-        <div style={estilosLocales.cajaTextoScroll}>
-          <strong>Art. a: Protocolo de Lavado de Manos y Sanitización.</strong> Todo el personal médico, de enfermería y técnico que ingrese a las áreas críticas (UCI, Quirófanos, Neonatología) debe realizar el lavado clínico de manos según los 5 momentos estipulados por la OMS, utilizando soluciones antisépticas autorizadas. El incumplimiento de esta norma será considerado una falta grave contra la seguridad del paciente.
-          <br /><br />
-          <strong>Art. b: Uso de Elementos de Protección Personal (EPP).</strong> Es de carácter obligatorio el uso de mascarillas quirúrgicas de alta eficiencia, guantes estériles y batas descartables durante cualquier procedimiento invasivo. Los elementos de protección deben ser desechados inmediatamente en los contenedores de riesgo biológico correspondientes al finalizar la intervención.
-          <br /><br />
-          <strong>Art. c: Gestión de Residuos Patogénicos.</strong> Las agujas, bisturís y cualquier material punzocortante deberán descartarse únicamente en los recipientes rígidos de color rojo. Queda estrictamente prohibido desechar materiales biológicos en bolsas de residuos comunes.
-        </div>
+    <div className={`${cardBg} rounded-2xl p-6 w-full max-w-3xl transition-colors duration-200`}>
+      {/* Header: título + botón Guardar Cambios */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className={`text-2xl font-bold ${textPrimary}`}>
+          Configuración del sistema
+        </h1>
+        <button
+          onClick={handleGuardar}
+          className="bg-green-700 hover:bg-green-800 active:bg-green-900 text-white font-semibold px-5 py-2 rounded-lg transition-colors"
+        >
+          {guardado ? "¡Guardado!" : "Guardar Cambios"}
+        </button>
       </div>
 
-      {/* BLOQUE 2: Protocolo de Confidencialidad y Protección de Datos */}
-      <div>
-        <h2 style={estilosLocales.subtituloSeccion}>Protocolo de Confidencialidad y Proteccion de Datos</h2>
-        <div style={estilosLocales.cajaTextoScroll}>
-          <strong>Art. a: Secreto Profesional y Ley de Derechos del Paciente.</strong> Toda la información clínica, diagnósticos, tratamientos e historial médico de los pacientes ingresados en esta institución médica tiene carácter de confidencialidad absoluta. Ningún miembro del personal está autorizado a divulgar datos a terceros sin el consentimiento expreso y firmado del paciente o su tutor legal.
-          <br /><br />
-          <strong>Art. b: Seguridad de Acceso Informático al Sistema.</strong> Las credenciales de acceso al software hospitalario (como el usuario y contraseña de este panel) son estrictamente personales e intransferibles. Queda prohibido dejar terminales de computadoras abiertas o desatendidas en los pasillos o estaciones de enfermería.
-          <br /><br />
-          <strong>Art. c: Filmaciones y Fotografías en Áreas Médicas.</strong> Queda terminantemente prohibido tomar capturas de pantalla, fotografías o filmaciones dentro de las salas de internación o áreas quirúrgicas que expongan la identidad de los pacientes o el uso de los equipos sin previa autorización de la Dirección Médica.
+      {/* Preferencias de Interfaz */}
+      <div className={`${innerBg} border ${border} rounded-xl p-5 transition-colors duration-200`}>
+        <h2 className={`text-lg font-bold mb-4 ${textPrimary}`}>
+          Preferencias de Interfaz
+        </h2>
+
+        {/* Modo de Visualización */}
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <span className={`font-medium ${textPrimary}`}>Modo de Visualización</span>
+
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              onClick={() => setModoOscuro(false)}
+              className="flex items-center gap-2"
+            >
+              <span
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  !modoOscuro ? "border-green-600" : "border-gray-400"
+                }`}
+              >
+                {!modoOscuro && (
+                  <span className="w-3 h-3 rounded-full bg-green-600" />
+                )}
+              </span>
+              <span className={textPrimary}>Claro (Predeterminado)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setModoOscuro(true)}
+              className="flex items-center gap-2"
+            >
+              <span
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  modoOscuro ? "border-green-600" : "border-gray-400"
+                }`}
+              >
+                {modoOscuro && (
+                  <span className="w-3 h-3 rounded-full bg-green-600" />
+                )}
+              </span>
+              <span className={textPrimary}>Oscuro</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Tamaño de Fuente / Accesibilidad */}
+        <div>
+          <span className={`font-medium block mb-2 ${textPrimary}`}>
+            Tamaño de Fuente / Accesibilidad
+          </span>
+
+          <input
+            type="range"
+            min={0}
+            max={2}
+            step={1}
+            value={fontIndex}
+            onChange={(e) => setFontIndex(Number(e.target.value))}
+            className="w-full accent-green-600 cursor-pointer"
+          />
+
+          <div className={`flex justify-between text-sm mt-1 ${textSecondary}`}>
+            <span className={fontIndex === 0 ? `font-bold ${textPrimary}` : ""}>
+              Chica
+            </span>
+            <span className={fontIndex === 1 ? `font-bold ${textPrimary}` : ""}>
+              Mediana
+            </span>
+            <span className={fontIndex === 2 ? `font-bold ${textPrimary}` : ""}>
+              Grande
+            </span>
+          </div>
         </div>
       </div>
-
     </div>
   );
-};
-
-export default Configuracion;
+}
