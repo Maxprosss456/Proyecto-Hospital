@@ -1,5 +1,5 @@
 import React from 'react';
-import { styles } from '../ComponentsStyles';
+import { useTheme } from '../../context/ThemeContext';
 
 const Norma = () => {
 
@@ -44,6 +44,16 @@ const Norma = () => {
     }
   };
 
+  // MODO OSCURO
+
+  const { modoOscuro } = useTheme();
+
+  const cajaTexto = modoOscuro
+    ? { backgroundColor: '#2f2f2f', color: '#CCCCCC' }
+    : {};
+
+
+
   return (
     <div style={estilosLocales.contenedorNormas}>
       
@@ -52,7 +62,7 @@ const Norma = () => {
       {/* BLOQUE 1: Reglamento General de Salud y Seguridad */}
       <div>
         <h2 style={estilosLocales.subtituloSeccion}>Reglamento General de Salud y Seguridad</h2>
-        <div style={estilosLocales.cajaTextoScroll}>
+        <div style={{...estilosLocales.cajaTextoScroll,...cajaTexto}}>
           <strong>Art. a: Protocolo de Lavado de Manos y Sanitización.</strong> Todo el personal médico, de enfermería y técnico que ingrese a las áreas críticas (UCI, Quirófanos, Neonatología) debe realizar el lavado clínico de manos según los 5 momentos estipulados por la OMS, utilizando soluciones antisépticas autorizadas. El incumplimiento de esta norma será considerado una falta grave contra la seguridad del paciente.
           <br /><br />
           <strong>Art. b: Uso de Elementos de Protección Personal (EPP).</strong> Es de carácter obligatorio el uso de mascarillas quirúrgicas de alta eficiencia, guantes estériles y batas descartables durante cualquier procedimiento invasivo. Los elementos de protección deben ser desechados inmediatamente en los contenedores de riesgo biológico correspondientes al finalizar la intervención.
@@ -64,7 +74,7 @@ const Norma = () => {
       {/* BLOQUE 2: Protocolo de Confidencialidad y Protección de Datos */}
       <div>
         <h2 style={estilosLocales.subtituloSeccion}>Protocolo de Confidencialidad y Proteccion de Datos</h2>
-        <div style={estilosLocales.cajaTextoScroll}>
+        <div style={{...estilosLocales.cajaTextoScroll,...cajaTexto}}>
           <strong>Art. a: Secreto Profesional y Ley de Derechos del Paciente.</strong> Toda la información clínica, diagnósticos, tratamientos e historial médico de los pacientes ingresados en esta institución médica tiene carácter de confidencialidad absoluta. Ningún miembro del personal está autorizado a divulgar datos a terceros sin el consentimiento expreso y firmado del paciente o su tutor legal.
           <br /><br />
           <strong>Art. b: Seguridad de Acceso Informático al Sistema.</strong> Las credenciales de acceso al software hospitalario (como el usuario y contraseña de este panel) son estrictamente personales e intransferibles. Queda prohibido dejar terminales de computadoras abiertas o desatendidas en los pasillos o estaciones de enfermería.
