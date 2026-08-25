@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // Necesario para el modo oscuro.
 import { useTheme } from '../../context/ThemeContext';
-// Estilos en objeto para mantener todo en un solo archivo
 
 const styles = {
   header: {
@@ -118,8 +117,8 @@ const styles = {
 const API_INFORMES = 'http://localhost:5000/api/informes';
 const API_URGENCIAS = 'http://localhost:5000/api/urgencias';
 
-const Informes = () => {
-  const [subseccion, setSubseccion] = useState('generales'); // 'generales' | 'urgentes'
+const Informes = ({ tabInicial = 'generales' }) => {
+  const [subseccion, setSubseccion] = useState(tabInicial); // 'generales' | 'urgentes'
   const [datos, setDatos] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -127,11 +126,19 @@ const Informes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { modoOscuro } = useTheme();
 
+  // Sincronizar tabInicial si cambia desde la navegación principal
+  useEffect(() => {
+    if (tabInicial) {
+      setSubseccion(tabInicial);
+    }
+  }, [tabInicial]);
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Sin fecha';
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('es-ES');
   };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);

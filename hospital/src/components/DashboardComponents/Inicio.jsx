@@ -1,6 +1,6 @@
 import React from 'react';
 import { styles } from '../ComponentsStyles';
-import '../Dashboard.css'; // Importante para cargar los estilos en móviles
+import '../Dashboard.css';
 
 const Inicio = ({ usuario, rangoActual, setSubSeccion }) => {
   return (
@@ -17,12 +17,12 @@ const Inicio = ({ usuario, rangoActual, setSubSeccion }) => {
         Centros Médicos
       </button>
 
-      {/* Tarjeta 2 - Situaciones Urgentes: Protegida por rol */}
+      {/* Tarjeta 2 - Situaciones Urgentes: Redirige a informes con la pestaña de urgencias */}
       {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
         <button 
           style={styles.tarjetaBoton} 
           className="tarjeta-responsive"
-          onClick={() => setSubSeccion('urgencias')} 
+          onClick={() => setSubSeccion('urgencias')}
         >
           Situaciones Urgentes
         </button>
