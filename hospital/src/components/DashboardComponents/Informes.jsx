@@ -118,7 +118,13 @@ const API_INFORMES = 'http://localhost:5000/api/informes';
 const API_URGENCIAS = 'http://localhost:5000/api/urgencias';
 
 const Informes = ({ tabInicial = 'generales' }) => {
-  const [subseccion, setSubseccion] = useState(tabInicial); // 'generales' | 'urgentes'
+  // Parsea la prop en caso de venir como 'informes:urgentes', 'urgentes' o 'generales'
+  const obtenerTabNormalizada = (tab) => {
+    if (tab === 'urgentes' || tab === 'informes:urgentes') return 'urgentes';
+    return 'generales';
+  };
+
+  const [subseccion, setSubseccion] = useState(() => obtenerTabNormalizada(tabInicial));
   const [datos, setDatos] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,11 +132,9 @@ const Informes = ({ tabInicial = 'generales' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { modoOscuro } = useTheme();
 
-  // Sincronizar tabInicial si cambia desde la navegación principal
+  // Sincronizar tabInicial si cambia dinámicamente desde el componente padre
   useEffect(() => {
-    if (tabInicial) {
-      setSubseccion(tabInicial);
-    }
+    setSubseccion(obtenerTabNormalizada(tabInicial));
   }, [tabInicial]);
 
   const formatDate = (dateString) => {

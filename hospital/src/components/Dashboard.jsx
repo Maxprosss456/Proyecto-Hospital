@@ -16,11 +16,27 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
 
   const rangoActual = usuario?.rango || 'sin_rango';
 
-  // El sidebar se mantiene verde siempre (según tu mockup); lo que
-  // cambia con el tema es el área de contenido.
+  // El sidebar se mantiene verde siempre; cambia el fondo según el tema.
   const contenidoTema = modoOscuro
     ? { backgroundColor: '#1e1e1e', color: '#ffffff' }
     : {};
+
+  // Determinar si estamos en cualquier variante de la sección informes
+  const esSeccionInformes = 
+    subSeccion === 'informes' || 
+    subSeccion === 'urgencias' || 
+    subSeccion === 'informes:urgentes';
+
+  // Título para la barra superior
+  const obtenerTituloSuperior = () => {
+    if (subSeccion === 'urgencias' || subSeccion === 'informes:urgentes') {
+      return 'URGENCIAS';
+    }
+    if (subSeccion === 'informes') {
+      return 'INFORMES';
+    }
+    return subSeccion.toUpperCase();
+  };
 
   return (
     <div style={styles.contenedorPrincipal} className="contenedor-principal-responsive">
@@ -58,10 +74,10 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
 
               {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
                 <div
-                  style={subSeccion === 'urgencias' ? styles.enlaceActivo : styles.enlaceMenu}
-                  onClick={() => setSubSeccion('urgencias')}
+                  style={esSeccionInformes ? styles.enlaceActivo : styles.enlaceMenu}
+                  onClick={() => setSubSeccion('informes')}
                 >
-                 🗎 INFORMES
+                  🗎 INFORMES
                 </div>
               )}
 
@@ -70,7 +86,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                   style={subSeccion === 'norma' ? styles.enlaceActivo : styles.enlaceMenu}
                   onClick={() => setSubSeccion('norma')}
                 >
-                 🕮 NORMAS
+                  🕮 NORMAS
                 </div>
               )}
 
@@ -79,7 +95,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                   style={subSeccion === 'configuracion' ? styles.enlaceActivo : styles.enlaceMenu}
                   onClick={() => setSubSeccion('configuracion')}
                 >
-                 ⛭ CONFIGURACIÓN
+                  ⛭ CONFIGURACIÓN
                 </div>
               )}
             </nav>
@@ -96,7 +112,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
         style={{ ...styles.areaContenido, ...contenidoTema }}
         className={`area-contenido-responsive ${
           modoOscuro ? 'tema-oscuro' : 'tema-claro'
-          }`}
+        }`}
       >
 
         {subSeccion !== 'inicio' && (
@@ -105,18 +121,27 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
               ⤺
             </button>
             <span style={styles.tituloSeccionSuperior}>
-              {subSeccion.toUpperCase()}
+              {obtenerTituloSuperior()}
             </span>
           </div>
         )}
 
         <div>
-          {/* COLOCAR SECCIONES AQUI */}
+          {/* SECCIONES */}
           {subSeccion === 'inicio' && (
             <Inicio usuario={usuario} rangoActual={rangoActual} setSubSeccion={setSubSeccion} />
           )}
 
-          {subSeccion === 'urgencias' && <Informes />}
+          {/* Renderiza Informes pasando la pestaña 'urgentes' o 'generales' */}
+          {esSeccionInformes && (
+            <Informes 
+              tabInicial={
+                subSeccion === 'urgencias' || subSeccion === 'informes:urgentes' 
+                  ? 'urgentes' 
+                  : 'generales'
+              } 
+            />
+          )}
 
           {subSeccion === 'norma' && <Norma />}
 

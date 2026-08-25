@@ -17,12 +17,12 @@ const Inicio = ({ usuario, rangoActual, setSubSeccion }) => {
         Centros Médicos
       </button>
 
-      {/* Tarjeta 2 - Situaciones Urgentes: Redirige a informes con la pestaña de urgencias */}
+      {/* Tarjeta 2 - Situaciones Urgentes: Redirige a informes activando la pestaña urgentes */}
       {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
         <button 
           style={styles.tarjetaBoton} 
           className="tarjeta-responsive"
-          onClick={() => setSubSeccion('urgencias')}
+          onClick={() => setSubSeccion('informes:urgentes')}
         >
           Situaciones Urgentes
         </button>
