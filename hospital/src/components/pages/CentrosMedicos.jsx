@@ -75,22 +75,6 @@ const styles = {
     marginBottom: '10px',
     fontSize: '14px',
   },
-  buttonDanger: {
-    backgroundColor: '#e74c3c',
-  },
-  buttonSuccess: {
-    backgroundColor: '#2ecc71',
-  },
-  sanctionBox: {
-    backgroundColor: '#fef9e7',
-    borderLeft: '4px solid #f1c40f',
-    padding: '15px',
-    marginTop: '15px',
-    borderRadius: '4px',
-  },
-  sanctionActions: {
-    marginTop: '20px',
-  },
   loading: {
     textAlign: 'center',
     padding: '50px',
@@ -125,26 +109,57 @@ const CentrosMedicos = () => {
   const [sanciones, setSanciones] = useState([]);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
 
-  // Cargar lista general de centros médicos
+  // Extraer datos usando los nombres reales de la tabla "hospitales"
+  const getCentroId = (c) => c?.id || c?.id_hospital;
+  const getCentroNombre = (c) => c?.nombre || 'Hospital sin nombre';
+  const getCentroCP = (c) => c?.codpostal ?? c?.codigoPostal ?? 'N/A';
+  const getCentroTel = (c) => c?.telefono ?? 'N/A';
+  const getCentroEmail = (c) => c?.email ?? 'N/A';
+
+  const getMedicoId = (m) => m?.id || m?.id_medico;
+  const getMedicoNombre = (m) => m?.nombre || m?.nombre_completo || 'Médico';
+  const getMedicoCargo = (m) => m?.cargo || 'Médico';
+  const getSancionDetalle = (s) => s?.sancion || s?.descripcion || 'Sanción registrada';
+
   useEffect(() => {
     const fetchCentros = async () => {
       setLoading(true);
       setError(null);
+      console.log('--- Buscando Hospitales ---');
       try {
-        const respuesta = await fetch(`${BASE_API_URL}/centros`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        // Consultamos /hospitales por el nombre exacto de la tabla en Supabase
+        let respuesta = await fetch(`${BASE_API_URL}/hospitales`);
+        
+        // Fallback a /centros si la API backend mapea /centros en vez de /hospitales
+        if (!respuesta.ok) {
+          console.warn('Ruta /api/hospitales dio status:', respuesta.status, 'Probando /api/centros...');
+          respuesta = await fetch(`${BASE_API_URL}/centros`);
+        }
 
         if (!respuesta.ok) {
-          throw new Error(`Error del servidor: ${respuesta.status}`);
+          throw new Error(`Error en el servidor backend: Status ${respuesta.status}`);
         }
 
         const datos = await respuesta.json();
-        setCentros(datos);
+        console.log('Respuesta cruda del backend:', datos);
+
+        // Desenvolver datos según como responda el servidor (Array directo, { data: [...] }, etc.)
+        let listaHospitales = [];
+        if (Array.isArray(datos)) {
+          listaHospitales = datos;
+        } else if (datos && Array.isArray(datos.data)) {
+          listaHospitales = datos.data;
+        } else if (datos && Array.isArray(datos.hospitales)) {
+          listaHospitales = datos.hospitales;
+        } else if (datos && Array.isArray(datos.centros)) {
+          listaHospitales = datos.centros;
+        }
+
+        console.log('Lista procesada final:', listaHospitales);
+        setCentros(listaHospitales);
       } catch (err) {
-        console.error('Error al cargar centros médicos:', err);
-        setError('No se pudieron cargar los centros médicos. Intente nuevamente.');
+        console.error('Error al solicitar la lista de hospitales:', err);
+        setError('No se pudieron cargar los centros médicos. Verifique la consola (F12).');
       } finally {
         setLoading(false);
       }
@@ -166,11 +181,17 @@ const CentrosMedicos = () => {
     setCentroSeleccionado(centro);
     setVista('detalleCentro');
     setLoadingDetalle(true);
+
+    const centroId = getCentroId(centro);
+    console.log('Cargando médicos del hospital ID:', centroId);
+
     try {
-      const respuesta = await fetch(`${BASE_API_URL}/centros/${centro.id}/medicos`);
+      const respuesta = await fetch(`${BASE_API_URL}/hospitales/${centroId}/medicos`);
       if (respuesta.ok) {
         const datosMedicos = await respuesta.json();
-        setMedicos(datosMedicos);
+        const listaMedicos = Array.isArray(datosMedicos) ? datosMedicos : (datosMedicos.data || []);
+        console.log('Médicos obtenidos:', listaMedicos);
+        setMedicos(listaMedicos);
       } else {
         setMedicos(centro.medicos || []);
       }
@@ -186,11 +207,17 @@ const CentrosMedicos = () => {
     setMedicoSeleccionado(medico);
     setVista('detalleMedico');
     setLoadingDetalle(true);
+
+    const medicoId = getMedicoId(medico);
+    console.log('Cargando sanciones del médico ID:', medicoId);
+
     try {
-      const respuesta = await fetch(`${BASE_API_URL}/medicos/${medico.id}/sanciones`);
+      const respuesta = await fetch(`${BASE_API_URL}/medicos/${medicoId}/sanciones`);
       if (respuesta.ok) {
         const datosSanciones = await respuesta.json();
-        setSanciones(datosSanciones);
+        const listaSanciones = Array.isArray(datosSanciones) ? datosSanciones : (datosSanciones.data || []);
+        console.log('Sanciones obtenidas:', listaSanciones);
+        setSanciones(listaSanciones);
       } else {
         setSanciones(medico.sanciones || []);
       }
@@ -216,28 +243,28 @@ const CentrosMedicos = () => {
         <div style={styles.noData}>No hay centros médicos cargados.</div>
       ) : (
         <div style={styles.cardGrid}>
-          {centros.map((centro) => {
-            const id = centro.id || centro.Id;
-            const nombre = centro.nombre || centro.Nombre;
-            const cp = centro.codigoPostal || centro.CodigoPostal || centro.cp;
-            const telefono = centro.telefono || centro.Telefono;
-            const email = centro.email || centro.Email;
+          {centros.map((centro, index) => {
+            const id = getCentroId(centro) || index;
+            const nombre = getCentroNombre(centro);
+            const cp = getCentroCP(centro);
+            const telefono = getCentroTel(centro);
+            const email = getCentroEmail(centro);
 
             return (
               <div
                 key={id}
                 style={styles.card}
-                onClick={() => irADetalleCentro({ ...centro, id, nombre })}
+                onClick={() => irADetalleCentro(centro)}
               >
                 <div style={styles.cardTitle}>{nombre}</div>
                 <div style={styles.cardField}>
-                  <span style={styles.label}>Código Postal:</span> {cp ?? 'N/A'}
+                  <span style={styles.label}>Código Postal:</span> {cp}
                 </div>
                 <div style={styles.cardField}>
-                  <span style={styles.label}>Teléfono:</span> {telefono ?? 'N/A'}
+                  <span style={styles.label}>Teléfono:</span> {telefono}
                 </div>
                 <div style={styles.cardField}>
-                  <span style={styles.label}>Email:</span> {email ?? 'N/A'}
+                  <span style={styles.label}>Email:</span> {email}
                 </div>
               </div>
             );
@@ -253,22 +280,13 @@ const CentrosMedicos = () => {
       <>
         <div style={styles.header}>
           <button style={styles.backButton} onClick={irALista}>←</button>
-          <h2 style={styles.headerTitle}>{centroSeleccionado.nombre}</h2>
+          <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div>
-          <p>
-            <span style={styles.label}>Código Postal:</span>{' '}
-            {centroSeleccionado.codigoPostal || centroSeleccionado.CodigoPostal || 'N/A'}
-          </p>
-          <p>
-            <span style={styles.label}>Teléfono:</span>{' '}
-            {centroSeleccionado.telefono || centroSeleccionado.Telefono || 'N/A'}
-          </p>
-          <p>
-            <span style={styles.label}>Email:</span>{' '}
-            {centroSeleccionado.email || centroSeleccionado.Email || 'N/A'}
-          </p>
+          <p><span style={styles.label}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
+          <p><span style={styles.label}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
+          <p><span style={styles.label}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
         </div>
         <h3 style={{ marginTop: '20px' }}>Cuerpo Médico</h3>
         {loadingDetalle ? (
@@ -276,28 +294,16 @@ const CentrosMedicos = () => {
         ) : medicos.length === 0 ? (
           <div style={styles.noData}>Este centro no tiene médicos cargados.</div>
         ) : (
-          medicos.map((medico) => {
-            const medId = medico.id || medico.Id;
-            const medNombre = medico.nombre || medico.Nombre;
-            const medCargo = medico.cargo || medico.Cargo || 'Médico';
-            const medSanciones = medico.sanciones || medico.Sanciones || [];
-
-            return (
-              <div
-                key={medId}
-                style={styles.doctorCard}
-                onClick={() => irADetalleMedico({ ...medico, id: medId, nombre: medNombre, cargo: medCargo })}
-              >
-                <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{medNombre}</div>
-                <div>{medCargo}</div>
-                {medSanciones.length > 0 && (
-                  <div style={{ color: '#e74c3c', fontSize: '13px', marginTop: '5px' }}>
-                    {medSanciones.length} sanción(es) registrada(s)
-                  </div>
-                )}
-              </div>
-            );
-          })
+          medicos.map((medico, idx) => (
+            <div
+              key={getMedicoId(medico) || idx}
+              style={styles.doctorCard}
+              onClick={() => irADetalleMedico(medico)}
+            >
+              <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{getMedicoNombre(medico)}</div>
+              <div>{getMedicoCargo(medico)}</div>
+            </div>
+          ))
         )}
       </>
     );
@@ -305,32 +311,18 @@ const CentrosMedicos = () => {
 
   const renderDetalleMedico = () => {
     if (!medicoSeleccionado) return null;
-    const medico = medicoSeleccionado;
-    const dni = medico.dni || medico.Dni;
-    const antiguedad = medico.antiguedad || medico.Antiguedad;
-    const telefono = medico.telefono || medico.Telefono;
-    const email = medico.email || medico.Email;
-    const direccion = medico.direccion || medico.Direccion;
-    const titulos = medico.titulos || medico.Titulos;
-
     return (
       <>
         <div style={styles.header}>
           <button style={styles.backButton} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
-          <h2 style={styles.headerTitle}>{medico.nombre}</h2>
+          <h2 style={styles.headerTitle}>{getMedicoNombre(medicoSeleccionado)}</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div style={styles.detailSection}>
-          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {medico.cargo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>DNI:</span> {dni ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Antigüedad:</span> {antiguedad ?? 0} años</div>
-          <div style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {telefono ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Email:</span> {email ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Dirección:</span> {direccion ?? 'N/A'}</div>
-          <div style={styles.detailRow}>
-            <span style={styles.label}>Títulos:</span>{' '}
-            {titulos && titulos.length > 0 ? (Array.isArray(titulos) ? titulos.join(', ') : titulos) : 'Sin títulos cargados'}
-          </div>
+          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
+          <div style={styles.detailRow}><span style={styles.label}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
         </div>
         <div style={{ marginTop: '20px' }}>
           <h4>Sanciones</h4>
@@ -339,27 +331,18 @@ const CentrosMedicos = () => {
           ) : sanciones.length === 0 ? (
             <p>No hay sanciones registradas.</p>
           ) : (
-            sanciones.map((sancion, idx) => {
-              const sancionId = sancion.id || sancion.Id || idx;
-              const detalleSancion = sancion.sancion || sancion.Sancion || sancion.descripcion || 'Sanción registrada';
-
-              return (
-                <div key={sancionId} style={styles.sanctionBox}>
-                  <div>{detalleSancion}</div>
-                  <button
-                    style={{ ...styles.button, marginTop: '10px' }}
-                    onClick={() => irADetalleSancion({ ...sancion, sancion: detalleSancion })}
-                  >
-                    Ver detalles de sanción
-                  </button>
-                </div>
-              );
-            })
+            sanciones.map((sancion, idx) => (
+              <div key={idx} style={styles.sanctionBox}>
+                <div>{getSancionDetalle(sancion)}</div>
+                <button
+                  style={{ ...styles.button, marginTop: '10px' }}
+                  onClick={() => irADetalleSancion(sancion)}
+                >
+                  Ver detalles de sanción
+                </button>
+              </div>
+            ))
           )}
-        </div>
-        <div style={{ marginTop: '20px' }}>
-          <button style={styles.button} onClick={() => alert('Funcionalidad en desarrollo.')}>Cambiar cargo</button>
-          <button style={{ ...styles.button, ...styles.buttonDanger }} onClick={() => alert('Funcionalidad en desarrollo.')}>Dar de baja</button>
         </div>
       </>
     );
@@ -377,13 +360,8 @@ const CentrosMedicos = () => {
         <div>
           <div style={styles.detailRow}><span style={styles.label}>Sanción:</span></div>
           <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '5px', marginTop: '5px' }}>
-            {sancionSeleccionada.sancion}
+            {getSancionDetalle(sancionSeleccionada)}
           </div>
-        </div>
-        <div style={styles.sanctionActions}>
-          <h4>Acciones disponibles</h4>
-          <button style={styles.button} onClick={() => alert('Funcionalidad en desarrollo.')}>Actualizar sanción</button>
-          <button style={{ ...styles.button, ...styles.buttonSuccess }} onClick={() => alert('Funcionalidad en desarrollo.')}>Levantar sanción</button>
         </div>
       </>
     );

@@ -66,61 +66,83 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ==========================================
-// 2. RUTA DE CENTROS (HOSPITALES Y MÉDICOS)
+// 2. RUTA DE CENTROS Y HOSPITALES (CORREGIDA)
 // ==========================================
-app.get('/api/centros', async (req, res) => {
+const obtenerHospitales = async (req, res) => {
     try {
-        const { data, error } = await supabase
+        console.log('--- CONSULTANDO HOSPITALES EN SUPABASE ---');
+
+        // 1. Traemos la lista principal de hospitales directamente
+        const { data: listaHospitales, error: errHospitales } = await supabase
             .from('hospitales')
-            .select(`
-                id,
-                nombre,
-                telefono,
-                email,
-                codpostal,
-                usuarios (
-                    id,
-                    nombre,
-                    apellido,
-                    dni,
-                    antiguedad,
-                    telefono,
-                    email,
-                    direccion,
+            .select('*');
+
+        if (errHospitales) {
+            console.error('Error al traer la tabla hospitales:', errHospitales);
+            return res.status(500).json({ error: errHospitales.message });
+        }
+
+        console.log('Hospitales encontrados directamente:', listaHospitales);
+
+        if (!listaHospitales || listaHospitales.length === 0) {
+            return res.json([]);
+        }
+
+        // 2. Intentamos traer los usuarios con sus datos (si las relaciones existen)
+        let usuariosPorHospital = {};
+        try {
+            const { data: usuariosData } = await supabase
+                .from('usuarios')
+                .select(`
+                    id, id_hospital, nombre, apellido, dni, antiguedad, telefono, email, direccion,
                     posiciones ( posicion ),
-                    titulo_usuario ( titulos ( titulo ) ),
-                    sanciones:sanciones!fk_sancionado ( id, sancion )
-                )
-            `);
+                    sanciones ( id, sancion )
+                `);
 
-        if (error) return res.status(500).json({ error: error.message });
+            if (usuariosData) {
+                usuariosData.forEach((u) => {
+                    const hospId = u.id_hospital;
+                    if (!usuariosPorHospital[hospId]) usuariosPorHospital[hospId] = [];
+                    usuariosPorHospital[hospId].push(u);
+                });
+            }
+        } catch (errRel) {
+            console.warn('Aviso: No se pudieron traer las relaciones de médicos, se enviarán centros vacíos de personal.', errRel);
+        }
 
-        const formateado = data.map((centro) => ({
-            id: centro.id,
-            nombre: centro.nombre,
-            telefono: centro.telefono,
-            email: centro.email,
-            codigoPostal: centro.codpostal,
-            medicos: (centro.usuarios || []).map((u) => ({
-                id: u.id,
-                nombre: `${u.nombre} ${u.apellido}`,
-                dni: u.dni,
-                antiguedad: u.antiguedad,
-                telefono: u.telefono,
-                email: u.email,
-                direccion: u.direccion,
-                cargo: u.posiciones?.posicion ?? 'Sin cargo asignado',
-                titulos: (u.titulo_usuario || []).map((t) => t.titulos?.titulo).filter(Boolean),
-                sanciones: u.sanciones || [],
-            })),
-        }));
+        // 3. Formateamos la respuesta integrando ambos datos
+        const formateado = listaHospitales.map((centro) => {
+            const medicosDelCentro = usuariosPorHospital[centro.id] || [];
+            
+            return {
+                id: centro.id,
+                nombre: centro.nombre,
+                telefono: centro.telefono,
+                email: centro.email,
+                codigoPostal: centro.codpostal,
+                medicos: medicosDelCentro.map((u) => ({
+                    id: u.id,
+                    nombre: `${u.nombre || ''} ${u.apellido || ''}`.trim(),
+                    dni: u.dni,
+                    antiguedad: u.antiguedad,
+                    telefono: u.telefono,
+                    email: u.email,
+                    direccion: u.direccion,
+                    cargo: u.posiciones?.posicion ?? 'Sin cargo asignado',
+                    sanciones: u.sanciones || [],
+                })),
+            };
+        });
 
         res.json(formateado);
     } catch (err) {
-        console.error('Error crítico en Centros:', err);
+        console.error('Error crítico en Centros/Hospitales:', err);
         return res.status(500).json({ error: 'Error crítico en el servidor' });
     }
-});
+};
+
+app.get('/api/centros', obtenerHospitales);
+app.get('/api/hospitales', obtenerHospitales);
 
 // ==========================================
 // 3. RUTA DE INFORMES GENERALES
@@ -140,7 +162,7 @@ app.get('/api/informes', async (req, res) => {
 
         if (error) return res.status(500).json({ error: error.message });
 
-        const formateado = data.map((row) => ({
+        const formateado = (data || []).map((row) => ({
             id: row.id,
             fecha: row.fecha,
             hospital: row.hospitales?.nombre ?? 'Desconocido',
@@ -154,6 +176,7 @@ app.get('/api/informes', async (req, res) => {
         return res.status(500).json({ error: 'Error crítico en el servidor' });
     }
 });
+
 // ==========================================
 // 4. RUTA DE SITUACIONES URGENTES
 // ==========================================
@@ -175,13 +198,13 @@ app.get('/api/urgencias', async (req, res) => {
             return res.status(500).json({ error: 'Error al consultar situaciones urgentes' });
         }
 
-        const respuestaFormateada = urgencias.map((u) => ({
+        const respuestaFormateada = (urgencias || []).map((u) => ({
             Id: u.id,
             Titulo: `Urgencia #${u.id}`,
             Hospital_Nombre: u.hospitales?.nombre ?? 'Hospital no asignado',
             Ubicacion: 'Consulta externa',
             Informe: u.situación,
-            Remitente: u.usuarios ? `${u.usuarios.nombre} ${u.usuarios.apellido}` : 'Desconocido'
+            Remitente: u.usuarios ? `${u.usuarios.nombre || ''} ${u.usuarios.apellido || ''}`.trim() : 'Desconocido'
         }));
 
         return res.json(respuestaFormateada);

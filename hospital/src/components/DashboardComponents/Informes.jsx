@@ -132,6 +132,12 @@ const Informes = ({ tabInicial = 'generales' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { modoOscuro } = useTheme();
 
+  // Helper functions para mapear múltiples campos desde Supabase
+  const obtenerFecha = (item) => item.fecha || item.created_at || item.Fecha || item.created_Date;
+  const obtenerHospital = (item) => item.hospital || item.Hospital_Nombre || item.hospital_nombre || item.centro || 'Desconocido';
+  const obtenerRemitente = (item) => item.remitente || item.Remitente || item.remitente_nombre || item.usuario || 'Desconocido';
+  const obtenerContenido = (item) => item.informe || item.Informe || item.contenido || item.descripcion || item.detalle || '';
+
   // Sincronizar tabInicial si cambia dinámicamente desde el componente padre
   useEffect(() => {
     setSubseccion(obtenerTabNormalizada(tabInicial));
@@ -173,16 +179,16 @@ const Informes = ({ tabInicial = 'generales' }) => {
     fetchData();
   }, [subseccion]);
 
-  // Filtrado reactivo en tiempo real
+  // Filtrado reactivo en tiempo real adaptado a Supabase
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFiltered(datos);
     } else {
       const lower = searchTerm.toLowerCase();
       const filteredData = datos.filter((item) => {
-        const remitente = (item.remitente || item.Remitente || '').toLowerCase();
-        const contenido = (item.informe || item.Informe || '').toLowerCase();
-        const hospital = (item.hospital || item.Hospital_Nombre || '').toLowerCase();
+        const remitente = obtenerRemitente(item).toLowerCase();
+        const contenido = obtenerContenido(item).toLowerCase();
+        const hospital = obtenerHospital(item).toLowerCase();
         return remitente.includes(lower) || contenido.includes(lower) || hospital.includes(lower);
       });
       setFiltered(filteredData);
@@ -190,10 +196,10 @@ const Informes = ({ tabInicial = 'generales' }) => {
   }, [searchTerm, datos]);
 
   const handleView = (item) => {
-    const fecha = formatDate(item.fecha);
-    const hospital = item.hospital || item.Hospital_Nombre;
-    const remitente = item.remitente || item.Remitente;
-    const contenido = item.informe || item.Informe;
+    const fecha = formatDate(obtenerFecha(item));
+    const hospital = obtenerHospital(item);
+    const remitente = obtenerRemitente(item);
+    const contenido = obtenerContenido(item);
 
     alert(
       `Detalle (${subseccion === 'generales' ? 'Informe General' : 'Situación Urgente'}):\n\n` +
@@ -277,11 +283,11 @@ const Informes = ({ tabInicial = 'generales' }) => {
             </thead>
             <tbody>
               {filtered.map((item, index) => {
-                const id = item.id || item.Id || index;
-                const fecha = item.fecha;
-                const hospital = item.hospital || item.Hospital_Nombre || 'Desconocido';
-                const remitente = item.remitente || item.Remitente || 'Desconocido';
-                const contenido = item.informe || item.Informe || '';
+                const id = item.id || item.id_informe || item.id_urgencia || item.Id || index;
+                const fecha = obtenerFecha(item);
+                const hospital = obtenerHospital(item);
+                const remitente = obtenerRemitente(item);
+                const contenido = obtenerContenido(item);
 
                 return (
                   <tr key={id}>
