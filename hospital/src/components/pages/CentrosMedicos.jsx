@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 
 const styles = {
   header: {
@@ -234,6 +235,21 @@ const CentrosMedicos = () => {
     setVista('detalleSancion');
   };
 
+
+  // MODO OSCURO
+
+   const { modoOscuro } = useTheme();
+  
+    const colorOscuro = modoOscuro
+      ? { backgroundColor: '#2f2f2f', color: '#CCCCCC' }
+      : {};
+
+    const whiteText = modoOscuro
+      ? {color: '#CCCCCC'}
+      : {};
+  
+
+
   const renderLista = () => (
     <>
       <div style={styles.header}>
@@ -253,18 +269,18 @@ const CentrosMedicos = () => {
             return (
               <div
                 key={id}
-                style={styles.card}
+                style={{...styles.card,...colorOscuro}}
                 onClick={() => irADetalleCentro(centro)}
               >
-                <div style={styles.cardTitle}>{nombre}</div>
-                <div style={styles.cardField}>
-                  <span style={styles.label}>Código Postal:</span> {cp}
+                <div style={{...styles.cardTitle,...colorOscuro}}>{nombre}</div>
+                <div style={{...styles.cardField,...colorOscuro}}>
+                  <span style={{...styles.label,...colorOscuro}}>Código Postal:</span> {cp}
                 </div>
-                <div style={styles.cardField}>
-                  <span style={styles.label}>Teléfono:</span> {telefono}
+                <div style={{...styles.cardField,...colorOscuro}}>
+                  <span style={{...styles.label,...colorOscuro}}>Teléfono:</span> {telefono}
                 </div>
-                <div style={styles.cardField}>
-                  <span style={styles.label}>Email:</span> {email}
+                <div style={{...styles.cardField,...colorOscuro}}>
+                  <span style={{...styles.label,...colorOscuro}}>Email:</span> {email}
                 </div>
               </div>
             );
@@ -279,14 +295,14 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={styles.backButton} onClick={irALista}>←</button>
+          <button style={{...styles.backButton,...whiteText}} onClick={irALista}>←</button>
           <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div>
-          <p><span style={styles.label}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
-          <p><span style={styles.label}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
-          <p><span style={styles.label}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
+          <p><span style={{...styles.label,...whiteText}}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
+          <p><span style={{...styles.label,...whiteText}}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
+          <p><span style={{...styles.label,...whiteText}}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
         </div>
         <h3 style={{ marginTop: '20px' }}>Cuerpo Médico</h3>
         {loadingDetalle ? (
@@ -297,7 +313,7 @@ const CentrosMedicos = () => {
           medicos.map((medico, idx) => (
             <div
               key={getMedicoId(medico) || idx}
-              style={styles.doctorCard}
+              style={{...styles.doctorCard,...colorOscuro}}
               onClick={() => irADetalleMedico(medico)}
             >
               <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{getMedicoNombre(medico)}</div>
@@ -314,15 +330,15 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={styles.backButton} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
+          <button style={{...styles.backButton,...whiteText}} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
           <h2 style={styles.headerTitle}>{getMedicoNombre(medicoSeleccionado)}</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div style={styles.detailSection}>
-          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
-          <div style={styles.detailRow}><span style={styles.label}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
+          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
         </div>
         <div style={{ marginTop: '20px' }}>
           <h4>Sanciones</h4>
