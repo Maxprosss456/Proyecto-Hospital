@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+// Necesario para el modo oscuro.
+import { useTheme } from '../../context/ThemeContext';
 // Estilos en objeto para mantener todo en un solo archivo
 const styles = {
   container: {
@@ -119,7 +121,7 @@ const GeneradorInformes = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
+    const { modoOscuro } = useTheme();
   // Cargar datos al montar
   useEffect(() => {
     // El compañero debe reemplazar esta URL con la ruta real de la API
@@ -198,12 +200,19 @@ const GeneradorInformes = () => {
     alert('Funcionalidad "Nuevo Informe" en desarrollo.');
   };
 
+
+  //Creamos variables que guarde los estilos que queremos para cada parte en modo oscuro.
+  const barraBusqueda = modoOscuro
+    ? { backgroundColor: '#111111', color: '#ffffff' }
+    : {};
+
+  const variables = modoOscuro
+    ? { backgroundColor: '#111111', color: '#ffffff' }
+    : {};
   // Renderizado principal
   return (
     <div>
-
       {/* Contenido principal */}
-      
         <div style={styles.header}>
           <h2 style={styles.headerTitle}>Generador de Informes</h2>
         </div>
@@ -212,7 +221,11 @@ const GeneradorInformes = () => {
         <div style={styles.searchBar}>
           <input
             type="text"
-            style={styles.searchInput}
+
+            //Forma en la que se aplican los estilos fusionados.
+            style={{ ...styles.searchInput, ...barraBusqueda}}
+
+            
             placeholder="Buscar paciente o informe..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,11 +247,11 @@ const GeneradorInformes = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Fecha</th>
-                  <th style={styles.th}>Hospital</th>
-                  <th style={styles.th}>Remitente</th>
-                  <th style={styles.th}>Informe</th>
-                  <th style={styles.th}>Acciones</th>
+                  <th style={{...styles.th,...variables}}>Fecha</th>
+                  <th style={{...styles.th,...variables}}>Hospital</th>
+                  <th style={{...styles.th,...variables}}>Remitente</th>
+                  <th style={{...styles.th,...variables}}>Informe</th>
+                  <th style={{...styles.th,...variables}}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,7 +277,6 @@ const GeneradorInformes = () => {
           </div>
         )}
     </div>
-    
   );
 };
 
