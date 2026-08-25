@@ -79,7 +79,7 @@ const API_HOSPITALES = 'http://localhost:5000/api/hospitales';
 const API_INFORMES = 'http://localhost:5000/api/informes';
 const API_URGENCIAS = 'http://localhost:5000/api/urgencias';
 
-const NuevoInf = ({ tipo = 'generales', onVolver }) => {
+const NuevoInf = ({ tipo = 'generales', usuario, onVolver }) => {
   const [hospitales, setHospitales] = useState([]);
   const [idHospital, setIdHospital] = useState('');
   const [contenido, setContenido] = useState('');
@@ -113,18 +113,21 @@ const NuevoInf = ({ tipo = 'generales', onVolver }) => {
     const esGeneral = tipo === 'generales';
     const endpoint = esGeneral ? API_INFORMES : API_URGENCIAS;
 
-    // Obtener usuario en sesión
-    const usuarioSesion = JSON.parse(localStorage.getItem('usuario') || '{}');
+    // Obtener objeto usuario desde props o desde localStorage
+    const usuarioSesion = usuario || JSON.parse(localStorage.getItem('usuario') || '{}');
+    
+    // Obtener id válido del remitente
+    const remitenteId = usuarioSesion.id || usuarioSesion.id_usuario || 1;
 
     const bodyData = esGeneral
       ? {
-          id_hospital: idHospital || null,
-          id_remitente: usuarioSesion.id || null,
+          id_hospital: idHospital ? parseInt(idHospital, 10) : null,
+          id_remitente: parseInt(remitenteId, 10),
           informe: contenido,
         }
       : {
-          id_hospital: idHospital || null,
-          id_remitente: usuarioSesion.id || null,
+          id_hospital: idHospital ? parseInt(idHospital, 10) : null,
+          id_remitente: parseInt(remitenteId, 10),
           situacion: contenido,
         };
 
@@ -135,16 +138,17 @@ const NuevoInf = ({ tipo = 'generales', onVolver }) => {
         body: JSON.stringify(bodyData),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         alert(esGeneral ? '¡Informe creado con éxito!' : '¡Urgencia registrada con éxito!');
         if (onVolver) onVolver();
       } else {
-        const errData = await res.json();
-        alert(`Error: ${errData.error || 'No se pudo guardar.'}`);
+        alert(`Error: ${data.error || 'No se pudo guardar el registro.'}`);
       }
     } catch (err) {
       console.error('Error enviando datos:', err);
-      alert('Error de conexión con el servidor.');
+      alert('Error al procesar la solicitud.');
     } finally {
       setCargando(false);
     }

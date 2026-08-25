@@ -171,10 +171,11 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
             />
           )}
 
-          {/* Vistas de creación mediante NuevoInf.jsx */}
+          {/* Vistas de creación mediante NuevoInf.jsx con prop usuario */}
           {subSeccion === 'nuevo_informe' && (
             <NuevoInf 
               tipo="generales" 
+              usuario={usuario}
               onVolver={() => setSubSeccion('informes')} 
             />
           )}
@@ -182,6 +183,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
           {subSeccion === 'nueva_urgencia' && (
             <NuevoInf 
               tipo="urgentes" 
+              usuario={usuario}
               onVolver={() => setSubSeccion('urgencias')} 
             />
           )}

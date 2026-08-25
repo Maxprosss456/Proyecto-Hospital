@@ -215,13 +215,11 @@ app.get('/api/urgencias', async (req, res) => {
 });
 
 // ==========================================
-// 5. CREAR NUEVO INFORME (POST)
+// CREAR NUEVO INFORME (POST)
 // ==========================================
 app.post('/api/informes', async (req, res) => {
     try {
         const { id_hospital, id_remitente, informe } = req.body;
-
-        console.log('--- CREANDO NUEVO INFORME ---', req.body);
 
         if (!informe || !informe.trim()) {
             return res.status(400).json({ error: 'El contenido del informe es obligatorio.' });
@@ -231,16 +229,16 @@ app.post('/api/informes', async (req, res) => {
             .from('informes')
             .insert([
                 {
-                    fecha: new Date().toISOString(), // Fecha/hora actual
+                    fecha: new Date().toISOString(),
                     informe: informe.trim(),
-                    id_hospital: id_hospital || null,
-                    id_remitente: id_remitente || null
+                    id_hospital: id_hospital ? Number(id_hospital) : null,
+                    id_remitente: id_remitente ? Number(id_remitente) : null
                 }
             ])
             .select();
 
         if (error) {
-            console.error('Error insertando informe en Supabase:', error);
+            console.error('Error insertando informe:', error);
             return res.status(500).json({ error: error.message });
         }
 
@@ -252,13 +250,11 @@ app.post('/api/informes', async (req, res) => {
 });
 
 // ==========================================
-// 6. CREAR NUEVA URGENCIA (POST)
+// CREAR NUEVA URGENCIA (POST)
 // ==========================================
 app.post('/api/urgencias', async (req, res) => {
     try {
         const { id_hospital, id_remitente, situacion } = req.body;
-
-        console.log('--- CREANDO NUEVA URGENCIA ---', req.body);
 
         if (!situacion || !situacion.trim()) {
             return res.status(400).json({ error: 'La descripción de la situación es obligatoria.' });
@@ -269,15 +265,15 @@ app.post('/api/urgencias', async (req, res) => {
             .insert([
                 {
                     fecha: new Date().toISOString(),
-                    situación: situacion.trim(), // Nota: en Supabase la columna lleva tilde
-                    id_hospital: id_hospital || null,
-                    id_remitente: id_remitente || null
+                    situación: situacion.trim(), // Nombre exacto de la columna en Supabase
+                    id_hospital: id_hospital ? Number(id_hospital) : null,
+                    id_remitente: id_remitente ? Number(id_remitente) : null
                 }
             ])
             .select();
 
         if (error) {
-            console.error('Error insertando urgencia en Supabase:', error);
+            console.error('Error insertando urgencia:', error);
             return res.status(500).json({ error: error.message });
         }
 
