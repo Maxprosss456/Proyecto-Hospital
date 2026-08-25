@@ -1,30 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// Estilos en objeto para mantener todo en un solo archivo
 const styles = {
-  container: {
-    display: 'flex',
-    height: '100vh',
-    fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#f5f7fa',
-  },
-  navItem: {
-    width: '100%',
-    padding: '12px 20px',
-    textAlign: 'center',
-    cursor: 'pointer',
-    borderBottom: '1px solid #34495e',
-    transition: 'background 0.2s',
-  },
-  mainContent: {
-    flex: 1,
-    padding: '20px',
-    overflowY: 'auto',
-    backgroundColor: '#fff',
-    margin: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -38,6 +14,21 @@ const styles = {
     fontWeight: '300',
     color: '#2c3e50',
   },
+  tabsContainer: {
+    display: 'flex',
+    gap: '10px',
+    marginBottom: '20px',
+  },
+  tabButton: (active) => ({
+    padding: '10px 20px',
+    borderRadius: '20px',
+    border: active ? 'none' : '1px solid #ccc',
+    backgroundColor: active ? '#3498db' : '#f8f9fa',
+    color: active ? '#fff' : '#555',
+    fontWeight: active ? 'bold' : 'normal',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  }),
   searchBar: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -93,6 +84,15 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
   },
+  badgeUrgente: {
+    backgroundColor: '#e74c3c',
+    color: '#fff',
+    padding: '3px 8px',
+    borderRadius: '12px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    display: 'inline-block',
+  },
   loading: {
     textAlign: 'center',
     padding: '50px',
@@ -112,109 +112,126 @@ const styles = {
   },
 };
 
-// 💡 Ajustá esta URL si tu backend corre en otro puerto o dominio.
-// En producción, lo ideal es leerla de una variable de entorno de Vite:
-// const API_URL = import.meta.env.VITE_API_URL;
-const API_URL = 'http://localhost:5000/api/informes';
+const API_INFORMES = 'http://localhost:5000/api/informes';
+const API_URGENCIAS = 'http://localhost:5000/api/urgencias';
 
 const Informes = () => {
-  const [informes, setInformes] = useState([]);
+  const [subseccion, setSubseccion] = useState('generales'); // 'generales' | 'urgentes'
+  const [datos, setDatos] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Cargar datos al montar, pidiéndolos al backend conectado a Supabase
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Sin fecha';
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('es-ES');
+  };
+
+  // Cargar datos según la pestaña activa
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      const endpoint = subseccion === 'generales' ? API_INFORMES : API_URGENCIAS;
+
       try {
-        const respuesta = await fetch(API_URL, {
+        const respuesta = await fetch(endpoint, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
 
         if (!respuesta.ok) {
           throw new Error(`Error del servidor: ${respuesta.status}`);
         }
 
-        const datos = await respuesta.json();
-
-        // Se espera un array de objetos con la forma:
-        // { fecha, hospital, remitente, informe }
-        setInformes(datos);
-        setFiltered(datos);
+        const data = await respuesta.json();
+        setDatos(data);
+        setFiltered(data);
       } catch (err) {
-        console.error('Error al cargar informes:', err);
-        setError('No se pudieron cargar los informes. Intente nuevamente.');
+        console.error(`Error al cargar ${subseccion}:`, err);
+        setError(`No se pudieron cargar los registros. Intente nuevamente.`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [subseccion]);
 
-  // Filtrar cuando cambia el término de búsqueda
+  // Filtrado reactivo en tiempo real
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFiltered(informes);
+      setFiltered(datos);
     } else {
       const lower = searchTerm.toLowerCase();
-      const filteredData = informes.filter(
-        (item) =>
-          item.remitente.toLowerCase().includes(lower) ||
-          item.informe.toLowerCase().includes(lower) ||
-          item.hospital.toLowerCase().includes(lower)
-      );
+      const filteredData = datos.filter((item) => {
+        const remitente = (item.remitente || item.Remitente || '').toLowerCase();
+        const contenido = (item.informe || item.Informe || '').toLowerCase();
+        const hospital = (item.hospital || item.Hospital_Nombre || '').toLowerCase();
+        return remitente.includes(lower) || contenido.includes(lower) || hospital.includes(lower);
+      });
       setFiltered(filteredData);
     }
-  }, [searchTerm, informes]);
+  }, [searchTerm, datos]);
 
-  const handleView = (informe) => {
-    // Acción al hacer clic en "Ver" - se puede abrir un modal o detalle
+  const handleView = (item) => {
+    const fecha = formatDate(item.fecha);
+    const hospital = item.hospital || item.Hospital_Nombre;
+    const remitente = item.remitente || item.Remitente;
+    const contenido = item.informe || item.Informe;
+
     alert(
-      `Ver detalle del informe:\nFecha: ${informe.fecha}\nHospital: ${informe.hospital}\nRemitente: ${informe.remitente}\nInforme: ${informe.informe}`
+      `Detalle (${subseccion === 'generales' ? 'Informe General' : 'Situación Urgente'}):\n\n` +
+      `Fecha: ${fecha}\n` +
+      `Hospital: ${hospital}\n` +
+      `Remitente: ${remitente}\n\n` +
+      `Detalle:\n${contenido}`
     );
   };
 
-  const handleNew = () => {
-    // Acción para crear nuevo informe
-    alert('Funcionalidad "Nuevo Informe" en desarrollo.');
-  };
-
-  // Renderizado principal
   return (
     <div>
-      {/* Contenido principal */}
       <div style={styles.header}>
-        <h2 style={styles.headerTitle}>Informes</h2>
+        <h2 style={styles.headerTitle}>Informes & Urgencias</h2>
       </div>
 
-      {/* Barra de búsqueda y botón nuevo */}
+      {/* Pestañas de Navegación */}
+      <div style={styles.tabsContainer}>
+        <button
+          style={styles.tabButton(subseccion === 'generales')}
+          onClick={() => { setSubseccion('generales'); setSearchTerm(''); }}
+        >
+          Informes Generales
+        </button>
+        <button
+          style={styles.tabButton(subseccion === 'urgentes')}
+          onClick={() => { setSubseccion('urgentes'); setSearchTerm(''); }}
+        >
+          Situaciones Urgentes
+        </button>
+      </div>
+
       <div style={styles.searchBar}>
         <input
           type="text"
           style={styles.searchInput}
-          placeholder="Buscar paciente o informe..."
+          placeholder={`Buscar en ${subseccion === 'generales' ? 'informes' : 'urgencias'}...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button style={styles.newButton} onClick={handleNew}>
-          Nuevo Informe +
+        <button style={styles.newButton} onClick={() => alert('Funcionalidad en desarrollo.')}>
+          {subseccion === 'generales' ? 'Nuevo Informe +' : 'Nueva Urgencia +'}
         </button>
       </div>
 
-      {/* Tabla de informes */}
       {loading ? (
-        <div style={styles.loading}>Cargando informes...</div>
+        <div style={styles.loading}>Cargando datos...</div>
       ) : error ? (
         <div style={styles.error}>{error}</div>
       ) : filtered.length === 0 ? (
-        <div style={styles.noData}>No se encontraron informes.</div>
+        <div style={styles.noData}>No se encontraron registros en esta sección.</div>
       ) : (
         <div style={styles.tableWrapper}>
           <table style={styles.table}>
@@ -223,31 +240,39 @@ const Informes = () => {
                 <th style={styles.th}>Fecha</th>
                 <th style={styles.th}>Hospital</th>
                 <th style={styles.th}>Remitente</th>
-                <th style={styles.th}>Informe</th>
+                <th style={styles.th}>
+                  {subseccion === 'generales' ? 'Informe' : 'Situación Urgente'}
+                </th>
                 <th style={styles.th}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((item, index) => (
-                <tr key={index}>
-                  <td style={styles.td}>{item.fecha}</td>
-                  <td style={styles.td}>{item.hospital}</td>
-                  <td style={styles.td}>{item.remitente}</td>
-                  <td style={styles.td}>
-                    {item.informe.length > 60
-                      ? `${item.informe.substring(0, 60)}...`
-                      : item.informe}
-                  </td>
-                  <td style={styles.td}>
-                    <button
-                      style={styles.viewButton}
-                      onClick={() => handleView(item)}
-                    >
-                      Ver
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((item, index) => {
+                const id = item.id || item.Id || index;
+                const fecha = item.fecha;
+                const hospital = item.hospital || item.Hospital_Nombre || 'Desconocido';
+                const remitente = item.remitente || item.Remitente || 'Desconocido';
+                const contenido = item.informe || item.Informe || '';
+
+                return (
+                  <tr key={id}>
+                    <td style={styles.td}>{formatDate(fecha)}</td>
+                    <td style={styles.td}>{hospital}</td>
+                    <td style={styles.td}>{remitente}</td>
+                    <td style={styles.td}>
+                      {subseccion === 'urgentes' && (
+                        <span style={styles.badgeUrgente}>URGENTE</span>
+                      )}{' '}
+                      {contenido.length > 60 ? `${contenido.substring(0, 60)}...` : contenido}
+                    </td>
+                    <td style={styles.td}>
+                      <button style={styles.viewButton} onClick={() => handleView(item)}>
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

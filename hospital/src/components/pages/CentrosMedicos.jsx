@@ -1,44 +1,6 @@
+import React, { useState, useEffect } from 'react';
 
-import React, { useState } from 'react';
-
-// Estilos en objeto para mantener todo en un solo archivo
 const styles = {
-
-  sidebar: {
-    width: '220px',
-    backgroundColor: '#2c3e50',
-    color: '#ecf0f1',
-    padding: '20px 0',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  sidebarTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '30px',
-    color: '#fff',
-  },
-  navItem: {
-    width: '100%',
-    padding: '12px 20px',
-    textAlign: 'center',
-    cursor: 'pointer',
-    borderBottom: '1px solid #34495e',
-    transition: 'background 0.2s',
-  },
-  navItemHover: {
-    backgroundColor: '#34495e',
-  },
-  mainContent: {
-    flex: 1,
-    padding: '20px',
-    overflowY: 'auto',
-    backgroundColor: '#fff',
-    margin: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -96,9 +58,6 @@ const styles = {
     cursor: 'pointer',
     transition: 'background 0.2s',
   },
-  doctorCardHover: {
-    background: '#ecf0f1',
-  },
   detailSection: {
     marginTop: '20px',
   },
@@ -132,112 +91,115 @@ const styles = {
   sanctionActions: {
     marginTop: '20px',
   },
+  loading: {
+    textAlign: 'center',
+    padding: '50px',
+    fontSize: '18px',
+    color: '#555',
+  },
+  error: {
+    textAlign: 'center',
+    padding: '50px',
+    fontSize: '18px',
+    color: '#e74c3c',
+  },
+  noData: {
+    textAlign: 'center',
+    padding: '30px',
+    color: '#777',
+  },
 };
 
-// Datos de ejemplo (simulados)
-const initialData = {
-  centros: [
-    {
-      id: 1,
-      nombre: 'Hospital N1',
-      provincia: 'Buenos Aires',
-      localidad: 'La Plata',
-      codigoPostal: '1900',
-      direccion: 'Calle 1 N° 123',
-      medicos: [
-        {
-          id: 101,
-          nombre: 'Dr. Juan Pérez',
-          especialidad: 'Ginecología',
-          infoGeneral: 'Especialista en ginecología y obstetricia',
-          pacientesACargo: 12,
-          archivosTitulos: 'Diploma UBA, Especialidad en Ginecología',
-          datosBiometricos: 'Huella digital registrada',
-          estadoActual: 'Sancionado',
-          tiempoAntiguedad: '5 años',
-          tipoMedico: 'Permanente',
-          historialPacientes: 'Paciente A, Paciente B, Paciente C',
-          sanciones: [
-            {
-              id: 201,
-              tipo: 'Suspensión temporal',
-              duracion: '30 días',
-              fechaInicio: '15/04/2026',
-              fechaFinalizacion: '15/05/2026',
-              nombre: 'Añejo Hernandez',
-              cargo: 'Ginecólogo',
-              sector: 'Ginecología',
-              estado: 'Activo',
-              motivo: 'El profesional incurrió en demoras reiteradas en la carga de informes médicos, afectando la continuidad asistencial.',
-            },
-          ],
-        },
-        {
-          id: 102,
-          nombre: 'Dr. Manuel Rodríguez',
-          especialidad: 'Cirugía General',
-          infoGeneral: 'Especialista en cirugía abdominal y laparoscópica',
-          pacientesACargo: 8,
-          archivosTitulos: 'Diploma UNLP, Residencia en Cirugía',
-          datosBiometricos: 'Huella digital registrada',
-          estadoActual: 'Activo',
-          tiempoAntiguedad: '3 años',
-          tipoMedico: 'Temporal',
-          historialPacientes: 'Paciente X, Paciente Y',
-          sanciones: [],
-        },
-      ],
-    },
-    {
-      id: 2,
-      nombre: 'Hospital N2',
-      provincia: 'Córdoba',
-      localidad: 'Córdoba',
-      codigoPostal: '5000',
-      direccion: 'Avenida 2 N° 456',
-      medicos: [
-        {
-          id: 201,
-          nombre: 'Dra. Laura Fernández',
-          especialidad: 'Pediatría',
-          infoGeneral: 'Especialista en pediatría y neonatología',
-          pacientesACargo: 15,
-          archivosTitulos: 'Diploma UNC, Especialidad en Pediatría',
-          datosBiometricos: 'Huella digital registrada',
-          estadoActual: 'Activo',
-          tiempoAntiguedad: '4 años',
-          tipoMedico: 'Permanente',
-          historialPacientes: 'Paciente M, Paciente N',
-          sanciones: [],
-        },
-      ],
-    },
-  ],
-};
+const BASE_API_URL = 'http://localhost:5000/api';
 
 const CentrosMedicos = () => {
-  const [data] = useState(initialData);
-  const [vista, setVista] = useState('lista'); // 'lista', 'detalleCentro', 'detalleMedico', 'detalleSancion'
+  const [centros, setCentros] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingDetalle, setLoadingDetalle] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [vista, setVista] = useState('lista'); 
   const [centroSeleccionado, setCentroSeleccionado] = useState(null);
+  const [medicos, setMedicos] = useState([]);
   const [medicoSeleccionado, setMedicoSeleccionado] = useState(null);
+  const [sanciones, setSanciones] = useState([]);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
 
-  // Navegación
+  // Cargar lista general de centros médicos
+  useEffect(() => {
+    const fetchCentros = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const respuesta = await fetch(`${BASE_API_URL}/centros`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!respuesta.ok) {
+          throw new Error(`Error del servidor: ${respuesta.status}`);
+        }
+
+        const datos = await respuesta.json();
+        setCentros(datos);
+      } catch (err) {
+        console.error('Error al cargar centros médicos:', err);
+        setError('No se pudieron cargar los centros médicos. Intente nuevamente.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCentros();
+  }, []);
+
   const irALista = () => {
     setVista('lista');
     setCentroSeleccionado(null);
+    setMedicos([]);
     setMedicoSeleccionado(null);
+    setSanciones([]);
     setSancionSeleccionada(null);
   };
 
-  const irADetalleCentro = (centro) => {
+  const irADetalleCentro = async (centro) => {
     setCentroSeleccionado(centro);
     setVista('detalleCentro');
+    setLoadingDetalle(true);
+    try {
+      const respuesta = await fetch(`${BASE_API_URL}/centros/${centro.id}/medicos`);
+      if (respuesta.ok) {
+        const datosMedicos = await respuesta.json();
+        setMedicos(datosMedicos);
+      } else {
+        setMedicos(centro.medicos || []);
+      }
+    } catch (err) {
+      console.error('Error al obtener médicos:', err);
+      setMedicos(centro.medicos || []);
+    } finally {
+      setLoadingDetalle(false);
+    }
   };
 
-  const irADetalleMedico = (medico) => {
+  const irADetalleMedico = async (medico) => {
     setMedicoSeleccionado(medico);
     setVista('detalleMedico');
+    setLoadingDetalle(true);
+    try {
+      const respuesta = await fetch(`${BASE_API_URL}/medicos/${medico.id}/sanciones`);
+      if (respuesta.ok) {
+        const datosSanciones = await respuesta.json();
+        setSanciones(datosSanciones);
+      } else {
+        setSanciones(medico.sanciones || []);
+      }
+    } catch (err) {
+      console.error('Error al obtener sanciones:', err);
+      setSanciones(medico.sanciones || []);
+    } finally {
+      setLoadingDetalle(false);
+    }
   };
 
   const irADetalleSancion = (sancion) => {
@@ -245,62 +207,112 @@ const CentrosMedicos = () => {
     setVista('detalleSancion');
   };
 
-  // Renderizar lista de centros
   const renderLista = () => (
     <>
       <div style={styles.header}>
         <h2 style={styles.headerTitle}>Centros Médicos</h2>
       </div>
-      <div style={styles.cardGrid}>
-        {data.centros.map((centro) => (
-          <div
-            key={centro.id}
-            style={styles.card}
-            onClick={() => irADetalleCentro(centro)}
-          >
-            <div style={styles.cardTitle}>{centro.nombre}</div>
-            <div style={styles.cardField}><span style={styles.label}>Provincia:</span> {centro.provincia}</div>
-            <div style={styles.cardField}><span style={styles.label}>Localidad:</span> {centro.localidad}</div>
-            <div style={styles.cardField}><span style={styles.label}>Código Postal:</span> {centro.codigoPostal}</div>
-            <div style={styles.cardField}><span style={styles.label}>Dirección:</span> {centro.direccion}</div>
-          </div>
-        ))}
-      </div>
+      {centros.length === 0 ? (
+        <div style={styles.noData}>No hay centros médicos cargados.</div>
+      ) : (
+        <div style={styles.cardGrid}>
+          {centros.map((centro) => {
+            const id = centro.id || centro.Id;
+            const nombre = centro.nombre || centro.Nombre;
+            const cp = centro.codigoPostal || centro.CodigoPostal || centro.cp;
+            const telefono = centro.telefono || centro.Telefono;
+            const email = centro.email || centro.Email;
+
+            return (
+              <div
+                key={id}
+                style={styles.card}
+                onClick={() => irADetalleCentro({ ...centro, id, nombre })}
+              >
+                <div style={styles.cardTitle}>{nombre}</div>
+                <div style={styles.cardField}>
+                  <span style={styles.label}>Código Postal:</span> {cp ?? 'N/A'}
+                </div>
+                <div style={styles.cardField}>
+                  <span style={styles.label}>Teléfono:</span> {telefono ?? 'N/A'}
+                </div>
+                <div style={styles.cardField}>
+                  <span style={styles.label}>Email:</span> {email ?? 'N/A'}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 
-  // Renderizar detalle de centro (lista de médicos)
   const renderDetalleCentro = () => {
     if (!centroSeleccionado) return null;
     return (
       <>
-        
+        <div style={styles.header}>
+          <button style={styles.backButton} onClick={irALista}>←</button>
+          <h2 style={styles.headerTitle}>{centroSeleccionado.nombre}</h2>
+          <div style={{ width: '40px' }}></div>
+        </div>
         <div>
-          <p><span style={styles.label}>Provincia:</span> {centroSeleccionado.provincia}</p>
-          <p><span style={styles.label}>Localidad:</span> {centroSeleccionado.localidad}</p>
-          <p><span style={styles.label}>Código Postal:</span> {centroSeleccionado.codigoPostal}</p>
-          <p><span style={styles.label}>Dirección:</span> {centroSeleccionado.direccion}</p>
+          <p>
+            <span style={styles.label}>Código Postal:</span>{' '}
+            {centroSeleccionado.codigoPostal || centroSeleccionado.CodigoPostal || 'N/A'}
+          </p>
+          <p>
+            <span style={styles.label}>Teléfono:</span>{' '}
+            {centroSeleccionado.telefono || centroSeleccionado.Telefono || 'N/A'}
+          </p>
+          <p>
+            <span style={styles.label}>Email:</span>{' '}
+            {centroSeleccionado.email || centroSeleccionado.Email || 'N/A'}
+          </p>
         </div>
         <h3 style={{ marginTop: '20px' }}>Cuerpo Médico</h3>
-        {centroSeleccionado.medicos.map((medico) => (
-          <div
-            key={medico.id}
-            style={styles.doctorCard}
-            onClick={() => irADetalleMedico(medico)}
-          >
-            <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{medico.nombre}</div>
-            <div>{medico.especialidad}</div>
-            <div style={{ color: '#555' }}>{medico.infoGeneral}</div>
-          </div>
-        ))}
+        {loadingDetalle ? (
+          <div style={styles.loading}>Cargando médicos...</div>
+        ) : medicos.length === 0 ? (
+          <div style={styles.noData}>Este centro no tiene médicos cargados.</div>
+        ) : (
+          medicos.map((medico) => {
+            const medId = medico.id || medico.Id;
+            const medNombre = medico.nombre || medico.Nombre;
+            const medCargo = medico.cargo || medico.Cargo || 'Médico';
+            const medSanciones = medico.sanciones || medico.Sanciones || [];
+
+            return (
+              <div
+                key={medId}
+                style={styles.doctorCard}
+                onClick={() => irADetalleMedico({ ...medico, id: medId, nombre: medNombre, cargo: medCargo })}
+              >
+                <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{medNombre}</div>
+                <div>{medCargo}</div>
+                {medSanciones.length > 0 && (
+                  <div style={{ color: '#e74c3c', fontSize: '13px', marginTop: '5px' }}>
+                    {medSanciones.length} sanción(es) registrada(s)
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </>
     );
   };
 
-  // Renderizar detalle de médico (página 9)
   const renderDetalleMedico = () => {
     if (!medicoSeleccionado) return null;
     const medico = medicoSeleccionado;
+    const dni = medico.dni || medico.Dni;
+    const antiguedad = medico.antiguedad || medico.Antiguedad;
+    const telefono = medico.telefono || medico.Telefono;
+    const email = medico.email || medico.Email;
+    const direccion = medico.direccion || medico.Direccion;
+    const titulos = medico.titulos || medico.Titulos;
+
     return (
       <>
         <div style={styles.header}>
@@ -309,87 +321,78 @@ const CentrosMedicos = () => {
           <div style={{ width: '40px' }}></div>
         </div>
         <div style={styles.detailSection}>
-          <div style={styles.detailRow}><span style={styles.label}>Especialidad:</span> {medico.especialidad}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Información General:</span> {medico.infoGeneral}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Pacientes a cargo:</span> {medico.pacientesACargo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Archivos y documentación de títulos:</span> {medico.archivosTitulos}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Datos biométricos:</span> {medico.datosBiometricos}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Estado actual:</span> {medico.estadoActual}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Tiempo de antigüedad:</span> {medico.tiempoAntiguedad}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Tipo de médico:</span> {medico.tipoMedico}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Historial de pacientes:</span> {medico.historialPacientes}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {medico.cargo}</div>
+          <div style={styles.detailRow}><span style={styles.label}>DNI:</span> {dni ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Antigüedad:</span> {antiguedad ?? 0} años</div>
+          <div style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {telefono ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Email:</span> {email ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Dirección:</span> {direccion ?? 'N/A'}</div>
+          <div style={styles.detailRow}>
+            <span style={styles.label}>Títulos:</span>{' '}
+            {titulos && titulos.length > 0 ? (Array.isArray(titulos) ? titulos.join(', ') : titulos) : 'Sin títulos cargados'}
+          </div>
         </div>
         <div style={{ marginTop: '20px' }}>
           <h4>Sanciones</h4>
-          {medico.sanciones.length === 0 ? (
+          {loadingDetalle ? (
+            <div style={styles.loading}>Cargando sanciones...</div>
+          ) : sanciones.length === 0 ? (
             <p>No hay sanciones registradas.</p>
           ) : (
-            medico.sanciones.map((sancion) => (
-              <div key={sancion.id} style={styles.sanctionBox}>
-                <div><span style={styles.label}>Tipo:</span> {sancion.tipo}</div>
-                <div><span style={styles.label}>Duración:</span> {sancion.duracion}</div>
-                <div><span style={styles.label}>Fecha de inicio:</span> {sancion.fechaInicio}</div>
-                <div><span style={styles.label}>Fecha de finalización:</span> {sancion.fechaFinalizacion}</div>
-                <div><span style={styles.label}>Estado:</span> {sancion.estado}</div>
-                <button
-                  style={{ ...styles.button, marginTop: '10px' }}
-                  onClick={() => irADetalleSancion(sancion)}
-                >
-                  Ver detalles de sanción
-                </button>
-              </div>
-            ))
+            sanciones.map((sancion, idx) => {
+              const sancionId = sancion.id || sancion.Id || idx;
+              const detalleSancion = sancion.sancion || sancion.Sancion || sancion.descripcion || 'Sanción registrada';
+
+              return (
+                <div key={sancionId} style={styles.sanctionBox}>
+                  <div>{detalleSancion}</div>
+                  <button
+                    style={{ ...styles.button, marginTop: '10px' }}
+                    onClick={() => irADetalleSancion({ ...sancion, sancion: detalleSancion })}
+                  >
+                    Ver detalles de sanción
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
         <div style={{ marginTop: '20px' }}>
-          <button style={styles.button}>Cambiar cargo</button>
-          <button style={styles.button}>Asignar paciente</button>
-          <button style={styles.button}>Desasignar paciente</button>
-          <button style={{ ...styles.button, ...styles.buttonDanger }}>Dar de baja</button>
+          <button style={styles.button} onClick={() => alert('Funcionalidad en desarrollo.')}>Cambiar cargo</button>
+          <button style={{ ...styles.button, ...styles.buttonDanger }} onClick={() => alert('Funcionalidad en desarrollo.')}>Dar de baja</button>
         </div>
       </>
     );
   };
 
-  // Renderizar detalle de sanción (páginas 10 y 11)
   const renderDetalleSancion = () => {
     if (!sancionSeleccionada) return null;
-    const sancion = sancionSeleccionada;
     return (
       <>
         <div style={styles.header}>
           <button style={styles.backButton} onClick={() => irADetalleMedico(medicoSeleccionado)}>←</button>
-          <h2 style={styles.headerTitle}>Configuración de sanción</h2>
+          <h2 style={styles.headerTitle}>Detalle de sanción</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div>
-          <div style={styles.detailRow}><span style={styles.label}>Tipo/s de sanción:</span> {sancion.tipo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Duración:</span> {sancion.duracion}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Fecha de inicio:</span> {sancion.fechaInicio}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Fecha de finalización:</span> {sancion.fechaFinalizacion}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Nombre:</span> {sancion.nombre}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {sancion.cargo}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Sector:</span> {sancion.sector}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Estado:</span> {sancion.estado}</div>
-          <div style={styles.detailRow}><span style={styles.label}>Motivos de la sanción:</span></div>
+          <div style={styles.detailRow}><span style={styles.label}>Sanción:</span></div>
           <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '5px', marginTop: '5px' }}>
-            {sancion.motivo}
+            {sancionSeleccionada.sancion}
           </div>
         </div>
         <div style={styles.sanctionActions}>
           <h4>Acciones disponibles</h4>
-          <button style={styles.button}>Actualizar informe de sanción</button>
-          <button style={styles.button}>Modificar duración</button>
-          <button style={{ ...styles.button, ...styles.buttonDanger }}>Bloquear acceso completo</button>
-          <button style={styles.button}>Agregar observación</button>
-          <button style={{ ...styles.button, ...styles.buttonSuccess }}>Levantar sanción</button>
+          <button style={styles.button} onClick={() => alert('Funcionalidad en desarrollo.')}>Actualizar sanción</button>
+          <button style={{ ...styles.button, ...styles.buttonSuccess }} onClick={() => alert('Funcionalidad en desarrollo.')}>Levantar sanción</button>
         </div>
       </>
     );
   };
 
-  {/* Renderizar contenido según vista */}
   const renderContent = () => {
+    if (loading) return <div style={styles.loading}>Cargando centros médicos...</div>;
+    if (error) return <div style={styles.error}>{error}</div>;
+
     switch (vista) {
       case 'lista':
         return renderLista();
@@ -404,14 +407,7 @@ const CentrosMedicos = () => {
     }
   };
 
-  return (
-    <div >
-      {/* Contenido principal */}
-
-        {renderContent()}
-
-    </div>
-  );
+  return <div>{renderContent()}</div>;
 };
 
 export default CentrosMedicos;
