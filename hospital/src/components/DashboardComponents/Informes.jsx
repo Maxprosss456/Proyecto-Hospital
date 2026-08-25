@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+// Necesario para el modo oscuro.
+import { useTheme } from '../../context/ThemeContext';
+// Estilos en objeto para mantener todo en un solo archivo
 
 const styles = {
   header: {
@@ -122,14 +125,13 @@ const Informes = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { modoOscuro } = useTheme();
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Sin fecha';
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('es-ES');
   };
-
-  // Cargar datos según la pestaña activa
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -191,8 +193,22 @@ const Informes = () => {
     );
   };
 
+  const handleNew = () => {
+    alert(`Funcionalidad "${subseccion === 'generales' ? 'Nuevo Informe' : 'Nueva Urgencia'}" en desarrollo.`);
+  };
+
+  // Estilos condicionales para modo oscuro
+  const barraBusqueda = modoOscuro
+    ? { backgroundColor: '#111111', color: '#ffffff' }
+    : {};
+
+  const variables = modoOscuro
+    ? { backgroundColor: '#111111', color: '#ffffff' }
+    : {};
+
   return (
     <div>
+      {/* Contenido principal */}
       <div style={styles.header}>
         <h2 style={styles.headerTitle}>Informes & Urgencias</h2>
       </div>
@@ -213,19 +229,21 @@ const Informes = () => {
         </button>
       </div>
 
+      {/* Barra de búsqueda y botón nuevo */}
       <div style={styles.searchBar}>
         <input
           type="text"
-          style={styles.searchInput}
+          style={{ ...styles.searchInput, ...barraBusqueda }}
           placeholder={`Buscar en ${subseccion === 'generales' ? 'informes' : 'urgencias'}...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button style={styles.newButton} onClick={() => alert('Funcionalidad en desarrollo.')}>
+        <button style={styles.newButton} onClick={handleNew}>
           {subseccion === 'generales' ? 'Nuevo Informe +' : 'Nueva Urgencia +'}
         </button>
       </div>
 
+      {/* Tabla de datos */}
       {loading ? (
         <div style={styles.loading}>Cargando datos...</div>
       ) : error ? (
@@ -237,13 +255,13 @@ const Informes = () => {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Fecha</th>
-                <th style={styles.th}>Hospital</th>
-                <th style={styles.th}>Remitente</th>
-                <th style={styles.th}>
+                <th style={{ ...styles.th, ...variables }}>Fecha</th>
+                <th style={{ ...styles.th, ...variables }}>Hospital</th>
+                <th style={{ ...styles.th, ...variables }}>Remitente</th>
+                <th style={{ ...styles.th, ...variables }}>
                   {subseccion === 'generales' ? 'Informe' : 'Situación Urgente'}
                 </th>
-                <th style={styles.th}>Acciones</th>
+                <th style={{ ...styles.th, ...variables }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
