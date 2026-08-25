@@ -80,3 +80,194 @@
     font-size: 22px !important; /* Ajuste del texto para que no desborde */
   }
 }
+
+/* =========================================================
+   SISTEMA DE TEMAS DEL ÁREA PRINCIPAL
+   ========================================================= */
+
+/* -------------------------
+   TEMA CLARO
+   ------------------------- */
+
+.tema-claro {
+  background-color: #ffffff !important;
+  color: #222222;
+}
+
+.tema-claro h1,
+.tema-claro h2,
+.tema-claro h3,
+.tema-claro h4,
+.tema-claro h5,
+.tema-claro h6 {
+  color: #1f2937;
+}
+
+.tema-claro p,
+.tema-claro span,
+.tema-claro label,
+.tema-claro div {
+  /* No forzamos color en todos los div,
+     para no romper botones ni componentes existentes. */
+}
+
+
+/* -------------------------
+   TEMA OSCURO
+   ------------------------- */
+
+.tema-oscuro {
+  background-color: #1e1e1e !important;
+  color: #f5f5f5;
+}
+
+/* Títulos generales */
+.tema-oscuro h1,
+.tema-oscuro h2,
+.tema-oscuro h3,
+.tema-oscuro h4,
+.tema-oscuro h5,
+.tema-oscuro h6 {
+  color: #ffffff !important;
+}
+
+/* Textos generales */
+.tema-oscuro p,
+.tema-oscuro li {
+  color: #e5e7eb;
+}
+
+/* Inputs */
+.tema-oscuro input,
+.tema-oscuro textarea,
+.tema-oscuro select {
+  background-color: #2b2b2b !important;
+  color: #ffffff !important;
+  border-color: #555555 !important;
+}
+
+.tema-oscuro input::placeholder,
+.tema-oscuro textarea::placeholder {
+  color: #b8b8b8 !important;
+}
+
+
+/* =========================================================
+   INFORMES
+   ========================================================= */
+
+.tema-oscuro table {
+  color: #eeeeee;
+}
+
+.tema-oscuro th {
+  background-color: #303030 !important;
+  color: #ffffff !important;
+  border-color: #555555 !important;
+}
+
+.tema-oscuro td {
+  color: #eeeeee !important;
+  border-color: #444444 !important;
+}
+
+.tema-oscuro tbody tr {
+  background-color: #242424;
+}
+
+
+/* =========================================================
+   NORMAS
+   ========================================================= */
+
+.tema-oscuro [style*="backgroundColor: '#FFFFFF'"] {
+  background-color: #2b2b2b !important;
+}
+
+.tema-oscuro [style*="color: '#000000'"] {
+  color: #ffffff !important;
+}
+
+.tema-oscuro [style*="color: '#111111'"] {
+  color: #f5f5f5 !important;
+}
+
+.tema-oscuro [style*="color: '#333333'"] {
+  color: #e5e5e5 !important;
+}
+
+.tema-oscuro [style*="color: '#2c3e50'"] {
+  color: #f5f5f5 !important;
+}
+
+
+/* =========================================================
+   CENTROS MÉDICOS
+   ========================================================= */
+
+.tema-oscuro .card,
+.tema-oscuro .doctor-card {
+  background-color: #2b2b2b !important;
+  border-color: #444444 !important;
+}
+
+.tema-oscuro .card-title,
+.tema-oscuro .header-title,
+.tema-oscuro .label {
+  color: #ffffff !important;
+}
+
+.tema-oscuro .card-field,
+.tema-oscuro .detail-row,
+.tema-oscuro .doctor-card {
+  color: #e5e5e5 !important;
+}
+
+.tema-oscuro .sanction-box {
+  background-color: #3a351d !important;
+  color: #f5f5f5 !important;
+}
+
+
+/* =========================================================
+   ALINEACIÓN GENERAL
+   ========================================================= */
+
+.area-contenido-responsive > div {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tema-claro,
+.tema-oscuro {
+  box-sizing: border-box;
+}
+
+
+/* Evita que títulos internos queden desplazados */
+.tema-claro h1,
+.tema-claro h2,
+.tema-claro h3,
+.tema-claro h4,
+.tema-oscuro h1,
+.tema-oscuro h2,
+.tema-oscuro h3,
+.tema-oscuro h4 {
+  margin-top: 0;
+}
+
+
+/* Tablas correctamente alineadas */
+.tema-claro table,
+.tema-oscuro table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.tema-claro th,
+.tema-claro td,
+.tema-oscuro th,
+.tema-oscuro td {
+  vertical-align: middle;
+  box-sizing: border-box;
+}
