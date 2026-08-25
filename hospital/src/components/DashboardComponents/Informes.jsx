@@ -117,7 +117,7 @@ const styles = {
 const API_INFORMES = 'http://localhost:5000/api/informes';
 const API_URGENCIAS = 'http://localhost:5000/api/urgencias';
 
-const Informes = ({ tabInicial = 'generales' }) => {
+const Informes = ({ tabInicial = 'generales', onNuevo }) => {
   // Parsea la prop en caso de venir como 'informes:urgentes', 'urgentes' o 'generales'
   const obtenerTabNormalizada = (tab) => {
     if (tab === 'urgentes' || tab === 'informes:urgentes') return 'urgentes';
@@ -211,7 +211,12 @@ const Informes = ({ tabInicial = 'generales' }) => {
   };
 
   const handleNew = () => {
-    alert(`Funcionalidad "${subseccion === 'generales' ? 'Nuevo Informe' : 'Nueva Urgencia'}" en desarrollo.`);
+    if (onNuevo && typeof onNuevo === 'function') {
+      // Notificamos al padre para renderizar la pantalla/formulario adecuado
+      onNuevo(subseccion);
+    } else {
+      console.log(`Listo para abrir vista de creación para: ${subseccion}`);
+    }
   };
 
   // Estilos condicionales para modo oscuro
