@@ -94,7 +94,9 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
       {/* Contenido Principal */}
       <main
         style={{ ...styles.areaContenido, ...contenidoTema }}
-        className="area-contenido-responsive"
+        className={`area-contenido-responsive ${
+          modoOscuro ? 'tema-oscuro' : 'tema-claro'
+          }`}
       >
 
         {subSeccion !== 'inicio' && (
