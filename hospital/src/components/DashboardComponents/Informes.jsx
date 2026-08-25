@@ -10,7 +10,6 @@ const styles = {
     fontFamily: 'Arial, sans-serif',
     backgroundColor: '#f5f7fa',
   },
-
   navItem: {
     width: '100%',
     padding: '12px 20px',
@@ -115,58 +114,46 @@ const styles = {
   },
 };
 
-const GeneradorInformes = () => {
+// 💡 Ajustá esta URL si tu backend corre en otro puerto o dominio.
+// En producción, lo ideal es leerla de una variable de entorno de Vite:
+// const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'http://localhost:5000/api/informes';
+
+const Informes = () => {
   const [informes, setInformes] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-    const { modoOscuro } = useTheme();
-  // Cargar datos al montar
-  useEffect(() => {
-    // El compañero debe reemplazar esta URL con la ruta real de la API
-    // que devuelva los informes con los datos de hospital y remitente.
-    // Estructura esperada: array de objetos con:
-    // { fecha, hospital: "Nombre Hospital", remitente: "Nombre Apellido", informe: "texto del informe" }
-    const fetchData = async () => {
-      try {
-        // Simulación de datos según la estructura de la BD
-        // (solo para demostración, en producción usar fetch)
-        const mockData = [
-          {
-            fecha: '2024-05-15',
-            hospital: 'Hospital N1',
-            remitente: 'Ana Pérez',
-            informe: 'Informe Anual de resultados del área de cirugía.',
-          },
-          {
-            fecha: '2024-05-13',
-            hospital: 'Hospital N2',
-            remitente: 'Java Aliacer',
-            informe: 'Reporte de incidencias en el servicio de urgencias.',
-          },
-          {
-            fecha: '2024-05-13',
-            hospital: 'Hospital N1',
-            remitente: 'Jarea Maidar',
-            informe: 'Actualización de protocolos de enfermería.',
-          },
-          {
-            fecha: '2024-05-13',
-            hospital: 'Hospital N3',
-            remitente: 'Tana Pérez',
-            informe: 'Evaluación de satisfacción de pacientes.',
-          },
-        ];
+  const { modoOscuro } = useTheme();
+  // Cargar datos al montar, pidiéndolos al backend conectado a Supabase
 
-        // Simular tiempo de carga
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setInformes(mockData);
-        setFiltered(mockData);
-        setLoading(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const respuesta = await fetch(API_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!respuesta.ok) {
+          throw new Error(`Error del servidor: ${respuesta.status}`);
+        }
+
+        const datos = await respuesta.json();
+
+        // Se espera un array de objetos con la forma:
+        // { fecha, hospital, remitente, informe }
+        setInformes(datos);
+        setFiltered(datos);
       } catch (err) {
         console.error('Error al cargar informes:', err);
         setError('No se pudieron cargar los informes. Intente nuevamente.');
+      } finally {
         setLoading(false);
       }
     };
@@ -192,7 +179,9 @@ const GeneradorInformes = () => {
 
   const handleView = (informe) => {
     // Acción al hacer clic en "Ver" - se puede abrir un modal o detalle
-    alert(`Ver detalle del informe:\nFecha: ${informe.fecha}\nHospital: ${informe.hospital}\nRemitente: ${informe.remitente}\nInforme: ${informe.informe}`);
+    alert(
+      `Ver detalle del informe:\nFecha: ${informe.fecha}\nHospital: ${informe.hospital}\nRemitente: ${informe.remitente}\nInforme: ${informe.informe}`
+    );
   };
 
   const handleNew = () => {
@@ -252,32 +241,35 @@ const GeneradorInformes = () => {
                   <th style={{...styles.th,...variables}}>Remitente</th>
                   <th style={{...styles.th,...variables}}>Informe</th>
                   <th style={{...styles.th,...variables}}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((item, index) => (
+                <tr key={index}>
+                  <td style={styles.td}>{item.fecha}</td>
+                  <td style={styles.td}>{item.hospital}</td>
+                  <td style={styles.td}>{item.remitente}</td>
+                  <td style={styles.td}>
+                    {item.informe.length > 60
+                      ? `${item.informe.substring(0, 60)}...`
+                      : item.informe}
+                  </td>
+                  <td style={styles.td}>
+                    <button
+                      style={styles.viewButton}
+                      onClick={() => handleView(item)}
+                    >
+                      Ver
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filtered.map((item, index) => (
-                  <tr key={index}>
-                    <td style={styles.td}>{item.fecha}</td>
-                    <td style={styles.td}>{item.hospital}</td>
-                    <td style={styles.td}>{item.remitente}</td>
-                    <td style={styles.td}>
-                      {item.informe.length > 60
-                        ? `${item.informe.substring(0, 60)}...`
-                        : item.informe}
-                    </td>
-                    <td style={styles.td}>
-                      <button style={styles.viewButton} onClick={() => handleView(item)}>
-                        Ver
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
 
-export default GeneradorInformes;
+export default Informes;

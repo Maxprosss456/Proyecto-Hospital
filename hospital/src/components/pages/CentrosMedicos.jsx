@@ -274,11 +274,7 @@ const CentrosMedicos = () => {
     if (!centroSeleccionado) return null;
     return (
       <>
-        <div style={styles.header}>
-          <button style={styles.backButton} onClick={irALista}>←</button>
-          <h2 style={styles.headerTitle}>{centroSeleccionado.nombre}</h2>
-          <div style={{ width: '40px' }}></div>
-        </div>
+        
         <div>
           <p><span style={styles.label}>Provincia:</span> {centroSeleccionado.provincia}</p>
           <p><span style={styles.label}>Localidad:</span> {centroSeleccionado.localidad}</p>
@@ -392,7 +388,7 @@ const CentrosMedicos = () => {
     );
   };
 
-  // Renderizar contenido según vista
+  {/* Renderizar contenido según vista */}
   const renderContent = () => {
     switch (vista) {
       case 'lista':

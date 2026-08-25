@@ -154,7 +154,6 @@ const styles = {
     borderRadius: 16,
     padding: 24,
     width: "100%",
-    maxWidth: 720,
     transition: "background-color 0.2s ease",
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
     boxSizing: "border-box",
