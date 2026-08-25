@@ -8,6 +8,7 @@ import Informes from './DashboardComponents/Informes';
 import Norma from './DashboardComponents/Norma';
 import Configuracion from './DashboardComponents/Configuracion';
 import CentrosMedicos from './pages/CentrosMedicos';
+import NuevoInf from './pages/NuevoInf';
 
 const Dashboard = ({ usuario, alCerrarSesion }) => {
   const [subSeccion, setSubSeccion] = useState('inicio');
@@ -35,7 +36,33 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
     if (subSeccion === 'informes') {
       return 'INFORMES';
     }
+    if (subSeccion === 'nuevo_informe') {
+      return 'NUEVO INFORME';
+    }
+    if (subSeccion === 'nueva_urgencia') {
+      return 'NUEVA URGENCIA';
+    }
     return subSeccion.toUpperCase();
+  };
+
+  // Callback cuando se hace clic en "Nuevo Informe +" o "Nueva Urgencia +" desde Informes.jsx
+  const handleIrANuevo = (tipo) => {
+    if (tipo === 'urgentes') {
+      setSubSeccion('nueva_urgencia');
+    } else {
+      setSubSeccion('nuevo_informe');
+    }
+  };
+
+  // Manejador del botón volver (⤺)
+  const handleVolver = () => {
+    if (subSeccion === 'nuevo_informe') {
+      setSubSeccion('informes');
+    } else if (subSeccion === 'nueva_urgencia') {
+      setSubSeccion('urgencias');
+    } else {
+      setSubSeccion('inicio');
+    }
   };
 
   return (
@@ -74,7 +101,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
 
               {['Médico', 'Enfermero', 'Director Médico', 'Admin'].includes(rangoActual) && (
                 <div
-                  style={esSeccionInformes ? styles.enlaceActivo : styles.enlaceMenu}
+                  style={(esSeccionInformes || subSeccion === 'nuevo_informe' || subSeccion === 'nueva_urgencia') ? styles.enlaceActivo : styles.enlaceMenu}
                   onClick={() => setSubSeccion('informes')}
                 >
                   🗎 INFORMES
@@ -117,7 +144,7 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
 
         {subSeccion !== 'inicio' && (
           <div style={styles.barraSuperiorUrgencias} className="barra-superior-responsive">
-            <button style={styles.botonVolver} onClick={() => setSubSeccion('inicio')}>
+            <button style={styles.botonVolver} onClick={handleVolver}>
               ⤺
             </button>
             <span style={styles.tituloSeccionSuperior}>
@@ -140,6 +167,22 @@ const Dashboard = ({ usuario, alCerrarSesion }) => {
                   ? 'urgentes' 
                   : 'generales'
               } 
+              onNuevo={handleIrANuevo}
+            />
+          )}
+
+          {/* Vistas de creación mediante NuevoInf.jsx */}
+          {subSeccion === 'nuevo_informe' && (
+            <NuevoInf 
+              tipo="generales" 
+              onVolver={() => setSubSeccion('informes')} 
+            />
+          )}
+
+          {subSeccion === 'nueva_urgencia' && (
+            <NuevoInf 
+              tipo="urgentes" 
+              onVolver={() => setSubSeccion('urgencias')} 
             />
           )}
 

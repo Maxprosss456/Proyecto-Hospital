@@ -214,6 +214,80 @@ app.get('/api/urgencias', async (req, res) => {
     }
 });
 
+// ==========================================
+// 5. CREAR NUEVO INFORME (POST)
+// ==========================================
+app.post('/api/informes', async (req, res) => {
+    try {
+        const { id_hospital, id_remitente, informe } = req.body;
+
+        console.log('--- CREANDO NUEVO INFORME ---', req.body);
+
+        if (!informe || !informe.trim()) {
+            return res.status(400).json({ error: 'El contenido del informe es obligatorio.' });
+        }
+
+        const { data, error } = await supabase
+            .from('informes')
+            .insert([
+                {
+                    fecha: new Date().toISOString(), // Fecha/hora actual
+                    informe: informe.trim(),
+                    id_hospital: id_hospital || null,
+                    id_remitente: id_remitente || null
+                }
+            ])
+            .select();
+
+        if (error) {
+            console.error('Error insertando informe en Supabase:', error);
+            return res.status(500).json({ error: error.message });
+        }
+
+        return res.status(201).json({ mensaje: 'Informe creado con éxito', data: data[0] });
+    } catch (err) {
+        console.error('Error crítico al crear informe:', err);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// ==========================================
+// 6. CREAR NUEVA URGENCIA (POST)
+// ==========================================
+app.post('/api/urgencias', async (req, res) => {
+    try {
+        const { id_hospital, id_remitente, situacion } = req.body;
+
+        console.log('--- CREANDO NUEVA URGENCIA ---', req.body);
+
+        if (!situacion || !situacion.trim()) {
+            return res.status(400).json({ error: 'La descripción de la situación es obligatoria.' });
+        }
+
+        const { data, error } = await supabase
+            .from('situaciones_urgentes')
+            .insert([
+                {
+                    fecha: new Date().toISOString(),
+                    situación: situacion.trim(), // Nota: en Supabase la columna lleva tilde
+                    id_hospital: id_hospital || null,
+                    id_remitente: id_remitente || null
+                }
+            ])
+            .select();
+
+        if (error) {
+            console.error('Error insertando urgencia en Supabase:', error);
+            return res.status(500).json({ error: error.message });
+        }
+
+        return res.status(201).json({ mensaje: 'Urgencia registrada con éxito', data: data[0] });
+    } catch (err) {
+        console.error('Error crítico al crear urgencia:', err);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 // Inicialización del servidor
 app.listen(5000, () => {
     console.log('Servidor corriendo sin errores en http://localhost:5000');
