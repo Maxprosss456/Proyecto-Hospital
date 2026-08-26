@@ -36,10 +36,21 @@ const styles = {
     transition: 'box-shadow 0.2s',
     cursor: 'pointer',
   },
+  cardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '15px',
+    marginBottom: '10px',
+  },
+  logoImg: {
+    width: '45px',
+    height: '45px',
+    objectFit: 'contain',
+    borderRadius: '6px',
+  },
   cardTitle: {
     fontSize: '20px',
     fontWeight: 'bold',
-    marginBottom: '10px',
     color: '#2c3e50',
   },
   cardField: {
@@ -110,12 +121,13 @@ const CentrosMedicos = () => {
   const [sanciones, setSanciones] = useState([]);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
 
-  // Extraer datos usando los nombres reales de la tabla "hospitales"
+  // Helper Getters (incluido el de logo que faltaba)
   const getCentroId = (c) => c?.id || c?.id_hospital;
   const getCentroNombre = (c) => c?.nombre || 'Hospital sin nombre';
   const getCentroCP = (c) => c?.codpostal ?? c?.codigoPostal ?? 'N/A';
   const getCentroTel = (c) => c?.telefono ?? 'N/A';
   const getCentroEmail = (c) => c?.email ?? 'N/A';
+  const getCentroLogo = (c) => c?.logo || '/hospital_logo.ico';
 
   const getMedicoId = (m) => m?.id || m?.id_medico;
   const getMedicoNombre = (m) => m?.nombre || m?.nombre_completo || 'Médico';
@@ -128,10 +140,8 @@ const CentrosMedicos = () => {
       setError(null);
       console.log('--- Buscando Hospitales ---');
       try {
-        // Consultamos /hospitales por el nombre exacto de la tabla en Supabase
         let respuesta = await fetch(`${BASE_API_URL}/hospitales`);
         
-        // Fallback a /centros si la API backend mapea /centros en vez de /hospitales
         if (!respuesta.ok) {
           console.warn('Ruta /api/hospitales dio status:', respuesta.status, 'Probando /api/centros...');
           respuesta = await fetch(`${BASE_API_URL}/centros`);
@@ -144,7 +154,6 @@ const CentrosMedicos = () => {
         const datos = await respuesta.json();
         console.log('Respuesta cruda del backend:', datos);
 
-        // Desenvolver datos según como responda el servidor (Array directo, { data: [...] }, etc.)
         let listaHospitales = [];
         if (Array.isArray(datos)) {
           listaHospitales = datos;
@@ -235,20 +244,16 @@ const CentrosMedicos = () => {
     setVista('detalleSancion');
   };
 
-
   // MODO OSCURO
-
-   const { modoOscuro } = useTheme();
+  const { modoOscuro } = useTheme();
   
-    const colorOscuro = modoOscuro
-      ? { backgroundColor: '#2f2f2f', color: '#CCCCCC' }
-      : {};
+  const colorOscuro = modoOscuro
+    ? { backgroundColor: '#2f2f2f', color: '#CCCCCC' }
+    : {};
 
-    const whiteText = modoOscuro
-      ? {color: '#CCCCCC'}
-      : {};
-  
-
+  const whiteText = modoOscuro
+    ? { color: '#CCCCCC' }
+    : {};
 
   const renderLista = () => (
     <>
@@ -265,22 +270,32 @@ const CentrosMedicos = () => {
             const cp = getCentroCP(centro);
             const telefono = getCentroTel(centro);
             const email = getCentroEmail(centro);
+            const logo = getCentroLogo(centro);
 
             return (
               <div
                 key={id}
-                style={{...styles.card,...colorOscuro}}
+                style={{ ...styles.card, ...colorOscuro }}
                 onClick={() => irADetalleCentro(centro)}
               >
-                <div style={{...styles.cardTitle,...colorOscuro}}>{nombre}</div>
-                <div style={{...styles.cardField,...colorOscuro}}>
-                  <span style={{...styles.label,...colorOscuro}}>Código Postal:</span> {cp}
+                <div style={styles.cardHeader}>
+                  <img 
+                    src={logo} 
+                    alt={`Logo de ${nombre}`} 
+                    style={styles.logoImg}
+                    onError={(e) => { e.target.src = '/hospital_logo.ico'; }} 
+                  />
+                  <div style={{ ...styles.cardTitle, ...colorOscuro, margin: 0 }}>{nombre}</div>
                 </div>
-                <div style={{...styles.cardField,...colorOscuro}}>
-                  <span style={{...styles.label,...colorOscuro}}>Teléfono:</span> {telefono}
+
+                <div style={{ ...styles.cardField, ...colorOscuro }}>
+                  <span style={{ ...styles.label, ...colorOscuro }}>Código Postal:</span> {cp}
                 </div>
-                <div style={{...styles.cardField,...colorOscuro}}>
-                  <span style={{...styles.label,...colorOscuro}}>Email:</span> {email}
+                <div style={{ ...styles.cardField, ...colorOscuro }}>
+                  <span style={{ ...styles.label, ...colorOscuro }}>Teléfono:</span> {telefono}
+                </div>
+                <div style={{ ...styles.cardField, ...colorOscuro }}>
+                  <span style={{ ...styles.label, ...colorOscuro }}>Email:</span> {email}
                 </div>
               </div>
             );
@@ -295,14 +310,22 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={{...styles.backButton,...whiteText}} onClick={irALista}>←</button>
-          <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
+          <button style={{ ...styles.backButton, ...whiteText }} onClick={irALista}>←</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img 
+              src={getCentroLogo(centroSeleccionado)} 
+              alt="Logo" 
+              style={{ width: '35px', height: '35px', objectFit: 'contain' }}
+              onError={(e) => { e.target.src = '/hospital_logo.ico'; }} 
+            />
+            <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
+          </div>
           <div style={{ width: '40px' }}></div>
         </div>
         <div>
-          <p><span style={{...styles.label,...whiteText}}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
-          <p><span style={{...styles.label,...whiteText}}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
-          <p><span style={{...styles.label,...whiteText}}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
+          <p><span style={{ ...styles.label, ...whiteText }}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
+          <p><span style={{ ...styles.label, ...whiteText }}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
+          <p><span style={{ ...styles.label, ...whiteText }}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
         </div>
         <h3 style={{ marginTop: '20px' }}>Cuerpo Médico</h3>
         {loadingDetalle ? (
@@ -313,7 +336,7 @@ const CentrosMedicos = () => {
           medicos.map((medico, idx) => (
             <div
               key={getMedicoId(medico) || idx}
-              style={{...styles.doctorCard,...colorOscuro}}
+              style={{ ...styles.doctorCard, ...colorOscuro }}
               onClick={() => irADetalleMedico(medico)}
             >
               <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{getMedicoNombre(medico)}</div>
@@ -330,15 +353,15 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={{...styles.backButton,...whiteText}} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
+          <button style={{ ...styles.backButton, ...whiteText }} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
           <h2 style={styles.headerTitle}>{getMedicoNombre(medicoSeleccionado)}</h2>
           <div style={{ width: '40px' }}></div>
         </div>
         <div style={styles.detailSection}>
-          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
-          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={{...styles.label,...whiteText}}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
+          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
         </div>
         <div style={{ marginTop: '20px' }}>
           <h4>Sanciones</h4>

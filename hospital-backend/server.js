@@ -72,7 +72,7 @@ const obtenerHospitales = async (req, res) => {
     try {
         console.log('--- CONSULTANDO HOSPITALES EN SUPABASE ---');
 
-        // 1. Traemos la lista principal de hospitales directamente
+        // 1. Traemos la lista de hospitales
         const { data: listaHospitales, error: errHospitales } = await supabase
             .from('hospitales')
             .select('*');
@@ -82,13 +82,11 @@ const obtenerHospitales = async (req, res) => {
             return res.status(500).json({ error: errHospitales.message });
         }
 
-        console.log('Hospitales encontrados directamente:', listaHospitales);
-
         if (!listaHospitales || listaHospitales.length === 0) {
             return res.json([]);
         }
 
-        // 2. Intentamos traer los usuarios con sus datos (si las relaciones existen)
+        // 2. Traer la relación con médicos/usuarios
         let usuariosPorHospital = {};
         try {
             const { data: usuariosData } = await supabase
@@ -107,16 +105,30 @@ const obtenerHospitales = async (req, res) => {
                 });
             }
         } catch (errRel) {
-            console.warn('Aviso: No se pudieron traer las relaciones de médicos, se enviarán centros vacíos de personal.', errRel);
+            console.warn('Aviso: No se pudieron traer las relaciones de médicos.', errRel);
         }
 
-        // 3. Formateamos la respuesta integrando ambos datos
+        // 3. Formatear la respuesta e incluir la URL PÚBLICA del logo de Storage
         const formateado = listaHospitales.map((centro) => {
             const medicosDelCentro = usuariosPorHospital[centro.id] || [];
             
+            // Generar la URL pública usando el bucket "hospital_logo"
+            let logoUrl = '/hospital_logo.ico'; // Fallback por defecto
+
+            if (centro.logo && !centro.logo.startsWith('/')) {
+                // Si el campo tiene un nombre de archivo (ej. "logo_1.png")
+                const { data: publicUrlData } = supabase
+                    .storage
+                    .from('hospital_logo')
+                    .getPublicUrl(centro.logo);
+
+                logoUrl = publicUrlData.publicUrl;
+            }
+
             return {
                 id: centro.id,
                 nombre: centro.nombre,
+                logo: logoUrl, // <-- URL pública enviada al frontend
                 telefono: centro.telefono,
                 email: centro.email,
                 codigoPostal: centro.codpostal,
