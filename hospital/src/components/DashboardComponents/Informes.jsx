@@ -118,7 +118,6 @@ const API_INFORMES = 'http://localhost:5000/api/informes';
 const API_URGENCIAS = 'http://localhost:5000/api/urgencias';
 
 const Informes = ({ tabInicial = 'generales', onNuevo }) => {
-  // Parsea la prop en caso de venir como 'informes:urgentes', 'urgentes' o 'generales'
   const obtenerTabNormalizada = (tab) => {
     if (tab === 'urgentes' || tab === 'informes:urgentes') return 'urgentes';
     return 'generales';
@@ -137,8 +136,10 @@ const Informes = ({ tabInicial = 'generales', onNuevo }) => {
   const obtenerHospital = (item) => item.hospital || item.Hospital_Nombre || item.hospital_nombre || item.centro || 'Desconocido';
   const obtenerRemitente = (item) => item.remitente || item.Remitente || item.remitente_nombre || item.usuario || 'Desconocido';
   const obtenerContenido = (item) => item.informe || item.Informe || item.contenido || item.descripcion || item.detalle || '';
+  
+  // Mapeo para obtener la URL del PDF del bucket 'docs'
+  const obtenerPdfUrl = (item) => item.pdf_url || item.url_pdf || item.pdf || item.archivo || item.documento || null;
 
-  // Sincronizar tabInicial si cambia dinámicamente desde el componente padre
   useEffect(() => {
     setSubseccion(obtenerTabNormalizada(tabInicial));
   }, [tabInicial]);
@@ -179,7 +180,6 @@ const Informes = ({ tabInicial = 'generales', onNuevo }) => {
     fetchData();
   }, [subseccion]);
 
-  // Filtrado reactivo en tiempo real adaptado a Supabase
   useEffect(() => {
     if (!searchTerm.trim()) {
       setFiltered(datos);
@@ -195,31 +195,38 @@ const Informes = ({ tabInicial = 'generales', onNuevo }) => {
     }
   }, [searchTerm, datos]);
 
+  // Manejo del botón VER para abrir el documento PDF
   const handleView = (item) => {
-    const fecha = formatDate(obtenerFecha(item));
-    const hospital = obtenerHospital(item);
-    const remitente = obtenerRemitente(item);
-    const contenido = obtenerContenido(item);
+    const pdfUrl = obtenerPdfUrl(item);
 
-    alert(
-      `Detalle (${subseccion === 'generales' ? 'Informe General' : 'Situación Urgente'}):\n\n` +
-      `Fecha: ${fecha}\n` +
-      `Hospital: ${hospital}\n` +
-      `Remitente: ${remitente}\n\n` +
-      `Detalle:\n${contenido}`
-    );
+    if (pdfUrl) {
+      // Abre la URL pública del PDF generado desde el bucket 'docs'
+      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      // Fallback si la fila no contiene archivo PDF subido
+      const fecha = formatDate(obtenerFecha(item));
+      const hospital = obtenerHospital(item);
+      const remitente = obtenerRemitente(item);
+      const contenido = obtenerContenido(item);
+
+      alert(
+        `Detalle sin PDF adjunto (${subseccion === 'generales' ? 'Informe General' : 'Situación Urgente'}):\n\n` +
+        `Fecha: ${fecha}\n` +
+        `Hospital: ${hospital}\n` +
+        `Remitente: ${remitente}\n\n` +
+        `Detalle:\n${contenido}`
+      );
+    }
   };
 
   const handleNew = () => {
     if (onNuevo && typeof onNuevo === 'function') {
-      // Notificamos al padre para renderizar la pantalla/formulario adecuado
       onNuevo(subseccion);
     } else {
       console.log(`Listo para abrir vista de creación para: ${subseccion}`);
     }
   };
 
-  // Estilos condicionales para modo oscuro
   const barraBusqueda = modoOscuro
     ? { backgroundColor: '#111111', color: '#ffffff' }
     : {};
@@ -230,12 +237,10 @@ const Informes = ({ tabInicial = 'generales', onNuevo }) => {
 
   return (
     <div>
-      {/* Contenido principal */}
       <div style={styles.header}>
         <h2 style={styles.headerTitle}>Informes & Urgencias</h2>
       </div>
 
-      {/* Pestañas de Navegación */}
       <div style={styles.tabsContainer}>
         <button
           style={styles.tabButton(subseccion === 'generales')}
@@ -251,7 +256,6 @@ const Informes = ({ tabInicial = 'generales', onNuevo }) => {
         </button>
       </div>
 
-      {/* Barra de búsqueda y botón nuevo */}
       <div style={styles.searchBar}>
         <input
           type="text"
@@ -265,7 +269,6 @@ const Informes = ({ tabInicial = 'generales', onNuevo }) => {
         </button>
       </div>
 
-      {/* Tabla de datos */}
       {loading ? (
         <div style={styles.loading}>Cargando datos...</div>
       ) : error ? (

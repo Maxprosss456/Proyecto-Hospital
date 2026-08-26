@@ -8,6 +8,21 @@ app.use(cors());
 
 console.log('Servidor conectado al módulo de Supabase con éxito.');
 
+// Helper para generar URL pública de PDF en el bucket 'docs'
+const obtenerUrlPdf = (nombreArchivo) => {
+    if (!nombreArchivo) return null;
+    if (nombreArchivo.startsWith('http://') || nombreArchivo.startsWith('https://')) {
+        return nombreArchivo; // Ya es una URL completa
+    }
+    
+    const { data } = supabase
+        .storage
+        .from('docs')
+        .getPublicUrl(nombreArchivo);
+
+    return data?.publicUrl || null;
+};
+
 // ==========================================
 // 1. RUTA DE AUTENTICACIÓN (LOGIN)
 // ==========================================
@@ -66,13 +81,12 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ==========================================
-// 2. RUTA DE CENTROS Y HOSPITALES (CORREGIDA)
+// 2. RUTA DE CENTROS Y HOSPITALES
 // ==========================================
 const obtenerHospitales = async (req, res) => {
     try {
         console.log('--- CONSULTANDO HOSPITALES EN SUPABASE ---');
 
-        // 1. Traemos la lista de hospitales
         const { data: listaHospitales, error: errHospitales } = await supabase
             .from('hospitales')
             .select('*');
@@ -86,7 +100,6 @@ const obtenerHospitales = async (req, res) => {
             return res.json([]);
         }
 
-        // 2. Traer la relación con médicos/usuarios
         let usuariosPorHospital = {};
         try {
             const { data: usuariosData } = await supabase
@@ -108,15 +121,12 @@ const obtenerHospitales = async (req, res) => {
             console.warn('Aviso: No se pudieron traer las relaciones de médicos.', errRel);
         }
 
-        // 3. Formatear la respuesta e incluir la URL PÚBLICA del logo de Storage
         const formateado = listaHospitales.map((centro) => {
             const medicosDelCentro = usuariosPorHospital[centro.id] || [];
             
-            // Generar la URL pública usando el bucket "hospital_logo"
-            let logoUrl = '/hospital_logo.ico'; // Fallback por defecto
+            let logoUrl = '/hospital_logo.ico';
 
             if (centro.logo && !centro.logo.startsWith('/')) {
-                // Si el campo tiene un nombre de archivo (ej. "logo_1.png")
                 const { data: publicUrlData } = supabase
                     .storage
                     .from('hospital_logo')
@@ -128,7 +138,7 @@ const obtenerHospitales = async (req, res) => {
             return {
                 id: centro.id,
                 nombre: centro.nombre,
-                logo: logoUrl, // <-- URL pública enviada al frontend
+                logo: logoUrl,
                 telefono: centro.telefono,
                 email: centro.email,
                 codigoPostal: centro.codpostal,
@@ -157,16 +167,14 @@ app.get('/api/centros', obtenerHospitales);
 app.get('/api/hospitales', obtenerHospitales);
 
 // ==========================================
-// 3. RUTA DE INFORMES GENERALES
+// 3. RUTA DE INFORMES GENERALES (PDF ACTUALIZADO)
 // ==========================================
 app.get('/api/informes', async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('informes')
             .select(`
-                id,
-                fecha,
-                informe,
+                *,
                 hospitales:id_hospital ( nombre ),
                 usuarios:id_remitente ( nombre, apellido )
             `)
@@ -174,13 +182,19 @@ app.get('/api/informes', async (req, res) => {
 
         if (error) return res.status(500).json({ error: error.message });
 
-        const formateado = (data || []).map((row) => ({
-            id: row.id,
-            fecha: row.fecha,
-            hospital: row.hospitales?.nombre ?? 'Desconocido',
-            remitente: `${row.usuarios?.nombre ?? ''} ${row.usuarios?.apellido ?? ''}`.trim(),
-            informe: row.informe,
-        }));
+        const formateado = (data || []).map((row) => {
+            // Evaluamos las posibles columnas donde guardes el nombre del archivo PDF
+            const nombreArchivoPdf = row.pdf || row.archivo || row.documento || row.url_pdf || null;
+
+            return {
+                id: row.id,
+                fecha: row.fecha,
+                hospital: row.hospitales?.nombre ?? 'Desconocido',
+                remitente: `${row.usuarios?.nombre ?? ''} ${row.usuarios?.apellido ?? ''}`.trim(),
+                informe: row.informe,
+                pdf_url: obtenerUrlPdf(nombreArchivoPdf),
+            };
+        });
 
         res.json(formateado);
     } catch (err) {
@@ -190,16 +204,14 @@ app.get('/api/informes', async (req, res) => {
 });
 
 // ==========================================
-// 4. RUTA DE SITUACIONES URGENTES
+// 4. RUTA DE SITUACIONES URGENTES (PDF ACTUALIZADO)
 // ==========================================
 app.get('/api/urgencias', async (req, res) => {
     try {
         const { data: urgencias, error } = await supabase
             .from('situaciones_urgentes')
             .select(`
-                id,
-                fecha,
-                situación,
+                *,
                 hospitales:id_hospital ( nombre ),
                 usuarios:id_remitente ( nombre, apellido )
             `)
@@ -210,14 +222,20 @@ app.get('/api/urgencias', async (req, res) => {
             return res.status(500).json({ error: 'Error al consultar situaciones urgentes' });
         }
 
-        const respuestaFormateada = (urgencias || []).map((u) => ({
-            Id: u.id,
-            Titulo: `Urgencia #${u.id}`,
-            Hospital_Nombre: u.hospitales?.nombre ?? 'Hospital no asignado',
-            Ubicacion: 'Consulta externa',
-            Informe: u.situación,
-            Remitente: u.usuarios ? `${u.usuarios.nombre || ''} ${u.usuarios.apellido || ''}`.trim() : 'Desconocido'
-        }));
+        const respuestaFormateada = (urgencias || []).map((u) => {
+            const nombreArchivoPdf = u.pdf || u.archivo || u.documento || u.url_pdf || null;
+
+            return {
+                Id: u.id,
+                Fecha: u.fecha,
+                Titulo: `Urgencia #${u.id}`,
+                Hospital_Nombre: u.hospitales?.nombre ?? 'Hospital no asignado',
+                Ubicacion: 'Consulta externa',
+                Informe: u.situación,
+                Remitente: u.usuarios ? `${u.usuarios.nombre || ''} ${u.usuarios.apellido || ''}`.trim() : 'Desconocido',
+                pdf_url: obtenerUrlPdf(nombreArchivoPdf),
+            };
+        });
 
         return res.json(respuestaFormateada);
     } catch (err) {
@@ -231,7 +249,7 @@ app.get('/api/urgencias', async (req, res) => {
 // ==========================================
 app.post('/api/informes', async (req, res) => {
     try {
-        const { id_hospital, id_remitente, informe } = req.body;
+        const { id_hospital, id_remitente, informe, pdf } = req.body;
 
         if (!informe || !informe.trim()) {
             return res.status(400).json({ error: 'El contenido del informe es obligatorio.' });
@@ -244,7 +262,8 @@ app.post('/api/informes', async (req, res) => {
                     fecha: new Date().toISOString(),
                     informe: informe.trim(),
                     id_hospital: id_hospital ? Number(id_hospital) : null,
-                    id_remitente: id_remitente ? Number(id_remitente) : null
+                    id_remitente: id_remitente ? Number(id_remitente) : null,
+                    pdf: pdf || null
                 }
             ])
             .select();
@@ -266,7 +285,7 @@ app.post('/api/informes', async (req, res) => {
 // ==========================================
 app.post('/api/urgencias', async (req, res) => {
     try {
-        const { id_hospital, id_remitente, situacion } = req.body;
+        const { id_hospital, id_remitente, situacion, pdf } = req.body;
 
         if (!situacion || !situacion.trim()) {
             return res.status(400).json({ error: 'La descripción de la situación es obligatoria.' });
@@ -277,9 +296,10 @@ app.post('/api/urgencias', async (req, res) => {
             .insert([
                 {
                     fecha: new Date().toISOString(),
-                    situación: situacion.trim(), // Nombre exacto de la columna en Supabase
+                    situación: situacion.trim(),
                     id_hospital: id_hospital ? Number(id_hospital) : null,
-                    id_remitente: id_remitente ? Number(id_remitente) : null
+                    id_remitente: id_remitente ? Number(id_remitente) : null,
+                    pdf: pdf || null
                 }
             ])
             .select();
