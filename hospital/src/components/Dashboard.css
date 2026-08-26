@@ -103,13 +103,7 @@
   color: #1f2937;
 }
 
-.tema-claro p,
-.tema-claro span,
-.tema-claro label,
-.tema-claro div {
-  /* No forzamos color en todos los div,
-     para no romper botones ni componentes existentes. */
-}
+
 
 
 /* -------------------------

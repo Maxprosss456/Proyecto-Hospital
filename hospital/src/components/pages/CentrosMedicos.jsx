@@ -1,110 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-
-const styles = {
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottom: '2px solid #ecf0f1',
-    paddingBottom: '10px',
-    marginBottom: '20px',
-  },
-  headerTitle: {
-    fontSize: '28px',
-    fontWeight: '300',
-    color: '#2c3e50',
-  },
-  backButton: {
-    background: 'none',
-    border: 'none',
-    fontSize: '24px',
-    cursor: 'pointer',
-    color: '#3498db',
-  },
-  cardGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '20px',
-  },
-  card: {
-    backgroundColor: '#fff',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-    transition: 'box-shadow 0.2s',
-    cursor: 'pointer',
-  },
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    marginBottom: '10px',
-  },
-  logoImg: {
-    width: '45px',
-    height: '45px',
-    objectFit: 'contain',
-    borderRadius: '6px',
-  },
-  cardTitle: {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  cardField: {
-    margin: '5px 0',
-    color: '#555',
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  doctorCard: {
-    backgroundColor: '#f9f9f9',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '15px',
-    marginBottom: '15px',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-  },
-  detailSection: {
-    marginTop: '20px',
-  },
-  detailRow: {
-    marginBottom: '8px',
-  },
-  button: {
-    backgroundColor: '#3498db',
-    color: '#fff',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    marginRight: '10px',
-    marginBottom: '10px',
-    fontSize: '14px',
-  },
-  loading: {
-    textAlign: 'center',
-    padding: '50px',
-    fontSize: '18px',
-    color: '#555',
-  },
-  error: {
-    textAlign: 'center',
-    padding: '50px',
-    fontSize: '18px',
-    color: '#e74c3c',
-  },
-  noData: {
-    textAlign: 'center',
-    padding: '30px',
-    color: '#777',
-  },
-};
+import './CentrosMedicos.css';
 
 const BASE_API_URL = 'http://localhost:5000/api';
 
@@ -114,14 +10,16 @@ const CentrosMedicos = () => {
   const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [error, setError] = useState(null);
 
-  const [vista, setVista] = useState('lista'); 
+  const [vista, setVista] = useState('lista');
   const [centroSeleccionado, setCentroSeleccionado] = useState(null);
   const [medicos, setMedicos] = useState([]);
   const [medicoSeleccionado, setMedicoSeleccionado] = useState(null);
   const [sanciones, setSanciones] = useState([]);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
 
-  // Helper Getters (incluido el de logo que faltaba)
+  const { modoOscuro } = useTheme();
+
+  // Helper Getters
   const getCentroId = (c) => c?.id || c?.id_hospital;
   const getCentroNombre = (c) => c?.nombre || 'Hospital sin nombre';
   const getCentroCP = (c) => c?.codpostal ?? c?.codigoPostal ?? 'N/A';
@@ -134,26 +32,20 @@ const CentrosMedicos = () => {
   const getMedicoCargo = (m) => m?.cargo || 'Médico';
   const getSancionDetalle = (s) => s?.sancion || s?.descripcion || 'Sanción registrada';
 
+  // === Lógica de fetch (idéntica a la original) ===
   useEffect(() => {
     const fetchCentros = async () => {
       setLoading(true);
       setError(null);
-      console.log('--- Buscando Hospitales ---');
       try {
         let respuesta = await fetch(`${BASE_API_URL}/hospitales`);
-        
         if (!respuesta.ok) {
-          console.warn('Ruta /api/hospitales dio status:', respuesta.status, 'Probando /api/centros...');
           respuesta = await fetch(`${BASE_API_URL}/centros`);
         }
-
         if (!respuesta.ok) {
           throw new Error(`Error en el servidor backend: Status ${respuesta.status}`);
         }
-
         const datos = await respuesta.json();
-        console.log('Respuesta cruda del backend:', datos);
-
         let listaHospitales = [];
         if (Array.isArray(datos)) {
           listaHospitales = datos;
@@ -164,8 +56,6 @@ const CentrosMedicos = () => {
         } else if (datos && Array.isArray(datos.centros)) {
           listaHospitales = datos.centros;
         }
-
-        console.log('Lista procesada final:', listaHospitales);
         setCentros(listaHospitales);
       } catch (err) {
         console.error('Error al solicitar la lista de hospitales:', err);
@@ -174,7 +64,6 @@ const CentrosMedicos = () => {
         setLoading(false);
       }
     };
-
     fetchCentros();
   }, []);
 
@@ -191,16 +80,12 @@ const CentrosMedicos = () => {
     setCentroSeleccionado(centro);
     setVista('detalleCentro');
     setLoadingDetalle(true);
-
     const centroId = getCentroId(centro);
-    console.log('Cargando médicos del hospital ID:', centroId);
-
     try {
       const respuesta = await fetch(`${BASE_API_URL}/hospitales/${centroId}/medicos`);
       if (respuesta.ok) {
         const datosMedicos = await respuesta.json();
         const listaMedicos = Array.isArray(datosMedicos) ? datosMedicos : (datosMedicos.data || []);
-        console.log('Médicos obtenidos:', listaMedicos);
         setMedicos(listaMedicos);
       } else {
         setMedicos(centro.medicos || []);
@@ -217,16 +102,12 @@ const CentrosMedicos = () => {
     setMedicoSeleccionado(medico);
     setVista('detalleMedico');
     setLoadingDetalle(true);
-
     const medicoId = getMedicoId(medico);
-    console.log('Cargando sanciones del médico ID:', medicoId);
-
     try {
       const respuesta = await fetch(`${BASE_API_URL}/medicos/${medicoId}/sanciones`);
       if (respuesta.ok) {
         const datosSanciones = await respuesta.json();
         const listaSanciones = Array.isArray(datosSanciones) ? datosSanciones : (datosSanciones.data || []);
-        console.log('Sanciones obtenidas:', listaSanciones);
         setSanciones(listaSanciones);
       } else {
         setSanciones(medico.sanciones || []);
@@ -244,16 +125,74 @@ const CentrosMedicos = () => {
     setVista('detalleSancion');
   };
 
-  // MODO OSCURO
-  const { modoOscuro } = useTheme();
-  
-  const colorOscuro = modoOscuro
-    ? { backgroundColor: '#2f2f2f', color: '#CCCCCC' }
-    : {};
+  // === Tokens de color según tema (fix del bug de textos invisibles) ===
+  const t = modoOscuro
+    ? {
+        cardBg: '#242c33', cardBorder: '#333e46',
+        textPrimary: '#eef2f4', textSecondary: '#9fb0b8',
+        headerBorder: '#333e46', accent: '#38c793', accentSoft: '#1c332a',
+        doctorCardBg: '#2b343b', doctorCardBorder: '#3a454d',
+        sanctionBg: '#3a331a', sanctionBorder: '#caa53d', danger: '#ff6b5e',
+      }
+    : {
+        cardBg: '#ffffff', cardBorder: '#e2e6ea',
+        textPrimary: '#1c2b34', textSecondary: '#5b6b74',
+        headerBorder: '#e2e6ea', accent: '#0f7a5c', accentSoft: '#eaf7f1',
+        doctorCardBg: '#f8fafb', doctorCardBorder: '#e2e6ea',
+        sanctionBg: '#fff8e6', sanctionBorder: '#f0c419', danger: '#c0392b',
+      };
 
-  const whiteText = modoOscuro
-    ? { color: '#CCCCCC' }
-    : {};
+  const styles = {
+    header: {
+      display: 'flex', alignItems: 'center', gap: '12px',
+      borderBottom: `2px solid ${t.headerBorder}`,
+      paddingBottom: '14px', marginBottom: '22px',
+    },
+    headerTitle: { fontSize: '26px', fontWeight: 600, color: t.textPrimary, margin: 0 },
+    backButton: {
+      background: 'none', border: `1.5px solid ${t.cardBorder}`, borderRadius: '8px',
+      width: '36px', height: '36px', fontSize: '18px', cursor: 'pointer',
+      color: t.accent, flexShrink: 0,
+    },
+    cardGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
+    card: {
+      backgroundColor: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: '12px',
+      padding: '22px', cursor: 'pointer',
+      boxShadow: modoOscuro ? '0 2px 10px rgba(0,0,0,0.35)' : '0 2px 10px rgba(15,40,50,0.06)',
+    },
+    cardHeader: { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' },
+    logoImg: {
+      width: '46px', height: '46px', objectFit: 'contain', borderRadius: '50%',
+      border: `2px solid ${t.cardBorder}`, backgroundColor: '#fff', padding: '2px', flexShrink: 0,
+    },
+    cardTitle: { fontSize: '18px', fontWeight: 700, color: t.textPrimary, margin: 0 },
+    cardField: { margin: '6px 0', color: t.textSecondary, fontSize: '14px' },
+    label: { fontWeight: 600, color: t.textPrimary },
+    sectionTitle: { fontSize: '17px', fontWeight: 700, color: t.textPrimary, marginTop: '24px', marginBottom: '12px' },
+    doctorCard: {
+      backgroundColor: t.doctorCardBg, border: `1px solid ${t.doctorCardBorder}`,
+      borderRadius: '10px', padding: '16px', marginBottom: '12px', cursor: 'pointer',
+    },
+    doctorNombre: { fontWeight: 700, fontSize: '16px', color: t.textPrimary },
+    badgeCargo: {
+      display: 'inline-block', marginTop: '6px', padding: '3px 10px', borderRadius: '20px',
+      fontSize: '12px', fontWeight: 600, backgroundColor: t.accentSoft, color: t.accent,
+    },
+    detailSection: { marginTop: '20px' },
+    detailRow: { marginBottom: '10px', color: t.textSecondary, fontSize: '15px' },
+    button: {
+      backgroundColor: t.accent, color: '#fff', border: 'none', padding: '10px 20px',
+      borderRadius: '8px', cursor: 'pointer', marginRight: '10px', marginBottom: '10px',
+      fontSize: '14px', fontWeight: 600,
+    },
+    sanctionBox: {
+      backgroundColor: t.sanctionBg, borderLeft: `4px solid ${t.sanctionBorder}`,
+      padding: '16px', marginTop: '15px', borderRadius: '8px', color: t.textPrimary,
+    },
+    loading: { textAlign: 'center', padding: '50px', fontSize: '17px', color: t.textSecondary },
+    error: { textAlign: 'center', padding: '50px', fontSize: '17px', color: t.danger },
+    noData: { textAlign: 'center', padding: '30px', color: t.textSecondary },
+  };
 
   const renderLista = () => (
     <>
@@ -273,30 +212,19 @@ const CentrosMedicos = () => {
             const logo = getCentroLogo(centro);
 
             return (
-              <div
-                key={id}
-                style={{ ...styles.card, ...colorOscuro }}
-                onClick={() => irADetalleCentro(centro)}
-              >
+              <div key={id} className="cm-card" style={styles.card} onClick={() => irADetalleCentro(centro)}>
                 <div style={styles.cardHeader}>
-                  <img 
-                    src={logo} 
-                    alt={`Logo de ${nombre}`} 
+                  <img
+                    src={logo}
+                    alt={`Logo de ${nombre}`}
                     style={styles.logoImg}
-                    onError={(e) => { e.target.src = '/hospital_logo.ico'; }} 
+                    onError={(e) => { e.target.src = '/hospital_logo.ico'; }}
                   />
-                  <div style={{ ...styles.cardTitle, ...colorOscuro, margin: 0 }}>{nombre}</div>
+                  <div style={styles.cardTitle}>{nombre}</div>
                 </div>
-
-                <div style={{ ...styles.cardField, ...colorOscuro }}>
-                  <span style={{ ...styles.label, ...colorOscuro }}>Código Postal:</span> {cp}
-                </div>
-                <div style={{ ...styles.cardField, ...colorOscuro }}>
-                  <span style={{ ...styles.label, ...colorOscuro }}>Teléfono:</span> {telefono}
-                </div>
-                <div style={{ ...styles.cardField, ...colorOscuro }}>
-                  <span style={{ ...styles.label, ...colorOscuro }}>Email:</span> {email}
-                </div>
+                <div style={styles.cardField}><span style={styles.label}>Código Postal:</span> {cp}</div>
+                <div style={styles.cardField}><span style={styles.label}>Teléfono:</span> {telefono}</div>
+                <div style={styles.cardField}><span style={styles.label}>Email:</span> {email}</div>
               </div>
             );
           })}
@@ -310,37 +238,30 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={{ ...styles.backButton, ...whiteText }} onClick={irALista}>←</button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img 
-              src={getCentroLogo(centroSeleccionado)} 
-              alt="Logo" 
-              style={{ width: '35px', height: '35px', objectFit: 'contain' }}
-              onError={(e) => { e.target.src = '/hospital_logo.ico'; }} 
-            />
-            <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
-          </div>
-          <div style={{ width: '40px' }}></div>
+          <button className="cm-back-btn" style={styles.backButton} onClick={irALista}>←</button>
+          <img
+            src={getCentroLogo(centroSeleccionado)}
+            alt="Logo"
+            style={{ ...styles.logoImg, width: '38px', height: '38px' }}
+            onError={(e) => { e.target.src = '/hospital_logo.ico'; }}
+          />
+          <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
         </div>
         <div>
-          <p><span style={{ ...styles.label, ...whiteText }}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
-          <p><span style={{ ...styles.label, ...whiteText }}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
-          <p><span style={{ ...styles.label, ...whiteText }}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
+          <p style={styles.detailRow}><span style={styles.label}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
+          <p style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
+          <p style={styles.detailRow}><span style={styles.label}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
         </div>
-        <h3 style={{ marginTop: '20px' }}>Cuerpo Médico</h3>
+        <h3 style={styles.sectionTitle}>Cuerpo Médico</h3>
         {loadingDetalle ? (
           <div style={styles.loading}>Cargando médicos...</div>
         ) : medicos.length === 0 ? (
           <div style={styles.noData}>Este centro no tiene médicos cargados.</div>
         ) : (
           medicos.map((medico, idx) => (
-            <div
-              key={getMedicoId(medico) || idx}
-              style={{ ...styles.doctorCard, ...colorOscuro }}
-              onClick={() => irADetalleMedico(medico)}
-            >
-              <div style={{ fontWeight: 'bold', fontSize: '18px' }}>{getMedicoNombre(medico)}</div>
-              <div>{getMedicoCargo(medico)}</div>
+            <div key={getMedicoId(medico) || idx} className="cm-doctor-card" style={styles.doctorCard} onClick={() => irADetalleMedico(medico)}>
+              <div style={styles.doctorNombre}>{getMedicoNombre(medico)}</div>
+              <span style={styles.badgeCargo}>{getMedicoCargo(medico)}</span>
             </div>
           ))
         )}
@@ -353,30 +274,26 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={{ ...styles.backButton, ...whiteText }} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
+          <button className="cm-back-btn" style={styles.backButton} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
           <h2 style={styles.headerTitle}>{getMedicoNombre(medicoSeleccionado)}</h2>
-          <div style={{ width: '40px' }}></div>
         </div>
         <div style={styles.detailSection}>
-          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
-          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
-          <div style={styles.detailRow}><span style={{ ...styles.label, ...whiteText }}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Cargo:</span> {getMedicoCargo(medicoSeleccionado)}</div>
+          <div style={styles.detailRow}><span style={styles.label}>DNI:</span> {medicoSeleccionado.dni ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {medicoSeleccionado.telefono ?? 'N/A'}</div>
+          <div style={styles.detailRow}><span style={styles.label}>Email:</span> {medicoSeleccionado.email ?? 'N/A'}</div>
         </div>
-        <div style={{ marginTop: '20px' }}>
-          <h4>Sanciones</h4>
+        <div>
+          <h3 style={styles.sectionTitle}>Sanciones</h3>
           {loadingDetalle ? (
             <div style={styles.loading}>Cargando sanciones...</div>
           ) : sanciones.length === 0 ? (
-            <p>No hay sanciones registradas.</p>
+            <p style={{ color: t.textSecondary }}>No hay sanciones registradas.</p>
           ) : (
             sanciones.map((sancion, idx) => (
               <div key={idx} style={styles.sanctionBox}>
                 <div>{getSancionDetalle(sancion)}</div>
-                <button
-                  style={{ ...styles.button, marginTop: '10px' }}
-                  onClick={() => irADetalleSancion(sancion)}
-                >
+                <button style={{ ...styles.button, marginTop: '12px' }} onClick={() => irADetalleSancion(sancion)}>
                   Ver detalles de sanción
                 </button>
               </div>
@@ -392,15 +309,12 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button style={styles.backButton} onClick={() => irADetalleMedico(medicoSeleccionado)}>←</button>
+          <button className="cm-back-btn" style={styles.backButton} onClick={() => irADetalleMedico(medicoSeleccionado)}>←</button>
           <h2 style={styles.headerTitle}>Detalle de sanción</h2>
-          <div style={{ width: '40px' }}></div>
         </div>
         <div>
           <div style={styles.detailRow}><span style={styles.label}>Sanción:</span></div>
-          <div style={{ backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '5px', marginTop: '5px' }}>
-            {getSancionDetalle(sancionSeleccionada)}
-          </div>
+          <div style={styles.sanctionBox}>{getSancionDetalle(sancionSeleccionada)}</div>
         </div>
       </>
     );
@@ -409,18 +323,12 @@ const CentrosMedicos = () => {
   const renderContent = () => {
     if (loading) return <div style={styles.loading}>Cargando centros médicos...</div>;
     if (error) return <div style={styles.error}>{error}</div>;
-
     switch (vista) {
-      case 'lista':
-        return renderLista();
-      case 'detalleCentro':
-        return renderDetalleCentro();
-      case 'detalleMedico':
-        return renderDetalleMedico();
-      case 'detalleSancion':
-        return renderDetalleSancion();
-      default:
-        return renderLista();
+      case 'lista': return renderLista();
+      case 'detalleCentro': return renderDetalleCentro();
+      case 'detalleMedico': return renderDetalleMedico();
+      case 'detalleSancion': return renderDetalleSancion();
+      default: return renderLista();
     }
   };
 
