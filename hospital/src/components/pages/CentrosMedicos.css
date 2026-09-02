@@ -19,3 +19,8 @@
 .cm-back-btn:hover {
   background-color: rgba(15, 122, 92, 0.1);
 }
+
+.cm-doctor-card:hover,
+.cm-item-card:hover {
+  transform: translateX(3px);
+}

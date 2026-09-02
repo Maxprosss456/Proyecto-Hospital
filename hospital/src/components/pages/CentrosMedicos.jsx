@@ -1,8 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import './CentrosMedicos.css';
 
 const BASE_API_URL = 'http://localhost:5000/api';
+
+// Etiquetas y metadatos de cada botón de sección del centro médico
+const SECCIONES = [
+  { key: 'cuerpoMedico', label: 'Cuerpo Médico', disponible: true },
+  { key: 'cuerpoNoMedico', label: 'Cuerpo No Médico', disponible: true },
+  { key: 'maquinaria', label: 'Maquinaria', disponible: true },
+  { key: 'medicamentos', label: 'Medicamentos', disponible: true },
+  { key: 'herramientas', label: 'Herramientas', disponible: true },
+  { key: 'pacientes', label: 'Pacientes', disponible: false, motivo: 'Sección restringida' },
+  { key: 'tratamientos', label: 'Tratamientos', disponible: false, motivo: 'Próximamente' },
+  { key: 'informes', label: 'Informes', disponible: true },
+];
 
 const CentrosMedicos = () => {
   const [centros, setCentros] = useState([]);
@@ -10,9 +22,13 @@ const CentrosMedicos = () => {
   const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [error, setError] = useState(null);
 
+  // vistas: lista -> detalleCentro -> seccion -> detalleMedico -> detalleSancion
   const [vista, setVista] = useState('lista');
   const [centroSeleccionado, setCentroSeleccionado] = useState(null);
-  const [medicos, setMedicos] = useState([]);
+
+  const [seccionActiva, setSeccionActiva] = useState(null);
+  const [itemsSeccion, setItemsSeccion] = useState([]);
+
   const [medicoSeleccionado, setMedicoSeleccionado] = useState(null);
   const [sanciones, setSanciones] = useState([]);
   const [sancionSeleccionada, setSancionSeleccionada] = useState(null);
@@ -32,8 +48,8 @@ const CentrosMedicos = () => {
   const getMedicoCargo = (m) => m?.cargo || 'Médico';
   const getSancionDetalle = (s) => s?.sancion || s?.descripcion || 'Sanción registrada';
 
-  // === Lógica de fetch (idéntica a la original) ===
-  useEffect(() => {
+  // === Fetch inicial: listado de centros ===
+  React.useEffect(() => {
     const fetchCentros = async () => {
       setLoading(true);
       setError(null);
@@ -70,29 +86,68 @@ const CentrosMedicos = () => {
   const irALista = () => {
     setVista('lista');
     setCentroSeleccionado(null);
-    setMedicos([]);
+    setSeccionActiva(null);
+    setItemsSeccion([]);
     setMedicoSeleccionado(null);
     setSanciones([]);
     setSancionSeleccionada(null);
   };
 
-  const irADetalleCentro = async (centro) => {
+  const irADetalleCentro = (centro) => {
     setCentroSeleccionado(centro);
     setVista('detalleCentro');
+    setSeccionActiva(null);
+    setItemsSeccion([]);
+  };
+
+  // Mapa de endpoints por sección — acá está la "conexión a la BD" de cada botón
+  const construirUrlSeccion = (tipo, centroId) => {
+    switch (tipo) {
+      case 'cuerpoMedico':
+        return `${BASE_API_URL}/hospitales/${centroId}/personal?tipo=medico`;
+      case 'cuerpoNoMedico':
+        return `${BASE_API_URL}/hospitales/${centroId}/personal?tipo=no_medico`;
+      case 'maquinaria':
+        return `${BASE_API_URL}/hospitales/${centroId}/maquinaria?tipo=maquinaria`;
+      case 'herramientas':
+        return `${BASE_API_URL}/hospitales/${centroId}/maquinaria?tipo=herramienta`;
+      case 'medicamentos':
+        return `${BASE_API_URL}/hospitales/${centroId}/medicamentos`;
+      case 'informes':
+        return `${BASE_API_URL}/informes?id_hospital=${centroId}`;
+      default:
+        return null;
+    }
+  };
+
+  const abrirSeccion = async (tipo) => {
+    const meta = SECCIONES.find((s) => s.key === tipo);
+    if (!meta || !meta.disponible) return; // Pacientes / Tratamientos: sin conexión aún
+
+    setSeccionActiva(tipo);
+    setVista('seccion');
     setLoadingDetalle(true);
-    const centroId = getCentroId(centro);
+    setItemsSeccion([]);
+
+    const centroId = getCentroId(centroSeleccionado);
+    const url = construirUrlSeccion(tipo, centroId);
+    if (!url) {
+      setLoadingDetalle(false);
+      return;
+    }
+
     try {
-      const respuesta = await fetch(`${BASE_API_URL}/hospitales/${centroId}/medicos`);
+      const respuesta = await fetch(url);
       if (respuesta.ok) {
-        const datosMedicos = await respuesta.json();
-        const listaMedicos = Array.isArray(datosMedicos) ? datosMedicos : (datosMedicos.data || []);
-        setMedicos(listaMedicos);
+        const datos = await respuesta.json();
+        const lista = Array.isArray(datos) ? datos : (datos.data || []);
+        setItemsSeccion(lista);
       } else {
-        setMedicos(centro.medicos || []);
+        setItemsSeccion([]);
       }
     } catch (err) {
-      console.error('Error al obtener médicos:', err);
-      setMedicos(centro.medicos || []);
+      console.error(`Error al obtener la sección "${tipo}":`, err);
+      setItemsSeccion([]);
     } finally {
       setLoadingDetalle(false);
     }
@@ -125,7 +180,7 @@ const CentrosMedicos = () => {
     setVista('detalleSancion');
   };
 
-  // === Tokens de color según tema (fix del bug de textos invisibles) ===
+  // === Tokens de color según tema ===
   const t = modoOscuro
     ? {
         cardBg: '#242c33', cardBorder: '#333e46',
@@ -133,6 +188,7 @@ const CentrosMedicos = () => {
         headerBorder: '#333e46', accent: '#38c793', accentSoft: '#1c332a',
         doctorCardBg: '#2b343b', doctorCardBorder: '#3a454d',
         sanctionBg: '#3a331a', sanctionBorder: '#caa53d', danger: '#ff6b5e',
+        disabledBg: '#2a2f33', disabledText: '#6b767c',
       }
     : {
         cardBg: '#ffffff', cardBorder: '#e2e6ea',
@@ -140,6 +196,7 @@ const CentrosMedicos = () => {
         headerBorder: '#e2e6ea', accent: '#0f7a5c', accentSoft: '#eaf7f1',
         doctorCardBg: '#f8fafb', doctorCardBorder: '#e2e6ea',
         sanctionBg: '#fff8e6', sanctionBorder: '#f0c419', danger: '#c0392b',
+        disabledBg: '#e9ecee', disabledText: '#9aa5ab',
       };
 
   const styles = {
@@ -192,6 +249,37 @@ const CentrosMedicos = () => {
     loading: { textAlign: 'center', padding: '50px', fontSize: '17px', color: t.textSecondary },
     error: { textAlign: 'center', padding: '50px', fontSize: '17px', color: t.danger },
     noData: { textAlign: 'center', padding: '30px', color: t.textSecondary },
+
+    // --- Detalle de centro (boceto) ---
+    centroTop: {
+      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+      gap: '24px', marginBottom: '26px', flexWrap: 'wrap',
+    },
+    centroInfoBlock: { display: 'flex', flexDirection: 'column', gap: '6px', minWidth: '220px' },
+    centroFotoGrande: {
+      width: '160px', height: '110px', objectFit: 'cover', borderRadius: '12px',
+      border: `1px solid ${t.cardBorder}`, backgroundColor: t.cardBg, flexShrink: 0,
+      boxShadow: modoOscuro ? '0 2px 10px rgba(0,0,0,0.35)' : '0 2px 10px rgba(15,40,50,0.08)',
+    },
+    seccionesGrid: {
+      display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '16px',
+    },
+    seccionBtn: {
+      backgroundColor: t.accent, color: '#fff', border: 'none', borderRadius: '10px',
+      padding: '22px 14px', fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+      textAlign: 'center', letterSpacing: '0.3px',
+      boxShadow: modoOscuro ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(15,40,50,0.1)',
+    },
+    seccionBtnDisabled: {
+      backgroundColor: t.disabledBg, color: t.disabledText, border: `1px dashed ${t.cardBorder}`,
+      borderRadius: '10px', padding: '22px 14px', fontSize: '15px', fontWeight: 700,
+      cursor: 'not-allowed', textAlign: 'center',
+    },
+    seccionBtnMotivo: { display: 'block', fontSize: '11px', fontWeight: 500, marginTop: '4px' },
+    itemCard: {
+      backgroundColor: t.doctorCardBg, border: `1px solid ${t.doctorCardBorder}`,
+      borderRadius: '10px', padding: '16px', marginBottom: '12px',
+    },
   };
 
   const renderLista = () => (
@@ -233,35 +321,105 @@ const CentrosMedicos = () => {
     </>
   );
 
+  // Vista principal del centro: info + logo a la derecha + grilla de botones (según el boceto)
   const renderDetalleCentro = () => {
     if (!centroSeleccionado) return null;
     return (
       <>
         <div style={styles.header}>
           <button className="cm-back-btn" style={styles.backButton} onClick={irALista}>←</button>
-          <img
-            src={getCentroLogo(centroSeleccionado)}
-            alt="Logo"
-            style={{ ...styles.logoImg, width: '38px', height: '38px' }}
-            onError={(e) => { e.target.src = '/hospital_logo.ico'; }}
-          />
           <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)}</h2>
         </div>
-        <div>
-          <p style={styles.detailRow}><span style={styles.label}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
-          <p style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
-          <p style={styles.detailRow}><span style={styles.label}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
+
+        <div style={styles.centroTop}>
+          <div style={styles.centroInfoBlock}>
+            <p style={styles.detailRow}><span style={styles.label}>Código Postal:</span> {getCentroCP(centroSeleccionado)}</p>
+            <p style={styles.detailRow}><span style={styles.label}>Teléfono:</span> {getCentroTel(centroSeleccionado)}</p>
+            <p style={styles.detailRow}><span style={styles.label}>Email:</span> {getCentroEmail(centroSeleccionado)}</p>
+          </div>
+          <img
+            src={getCentroLogo(centroSeleccionado)}
+            alt={`Foto de ${getCentroNombre(centroSeleccionado)}`}
+            style={styles.centroFotoGrande}
+            onError={(e) => { e.target.src = '/hospital_logo.ico'; }}
+          />
         </div>
-        <h3 style={styles.sectionTitle}>Cuerpo Médico</h3>
+
+        <div style={styles.seccionesGrid}>
+          {SECCIONES.map((s) => (
+            <button
+              key={s.key}
+              style={s.disponible ? styles.seccionBtn : styles.seccionBtnDisabled}
+              onClick={() => abrirSeccion(s.key)}
+              disabled={!s.disponible}
+              title={s.disponible ? undefined : s.motivo}
+            >
+              {s.label}
+              {!s.disponible && <span style={styles.seccionBtnMotivo}>{s.motivo}</span>}
+            </button>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  // Vista genérica de cada sección (Cuerpo Médico, Maquinaria, Medicamentos, Informes, etc.)
+  // Placeholder simple: la conexión a la BD ya funciona, el diseño detallado de cada
+  // mini-sección se define más adelante.
+  const renderSeccion = () => {
+    const meta = SECCIONES.find((s) => s.key === seccionActiva);
+    const titulo = meta ? meta.label : '';
+    const esPersonal = seccionActiva === 'cuerpoMedico' || seccionActiva === 'cuerpoNoMedico';
+
+    return (
+      <>
+        <div style={styles.header}>
+          <button className="cm-back-btn" style={styles.backButton} onClick={() => setVista('detalleCentro')}>←</button>
+          <h2 style={styles.headerTitle}>{getCentroNombre(centroSeleccionado)} / {titulo}</h2>
+        </div>
+
         {loadingDetalle ? (
-          <div style={styles.loading}>Cargando médicos...</div>
-        ) : medicos.length === 0 ? (
-          <div style={styles.noData}>Este centro no tiene médicos cargados.</div>
+          <div style={styles.loading}>Cargando {titulo.toLowerCase()}...</div>
+        ) : itemsSeccion.length === 0 ? (
+          <div style={styles.noData}>No hay registros de "{titulo}" para este centro.</div>
+        ) : esPersonal ? (
+          itemsSeccion.map((persona, idx) => (
+            <div
+              key={getMedicoId(persona) || idx}
+              className="cm-doctor-card"
+              style={styles.doctorCard}
+              onClick={() => irADetalleMedico(persona)}
+            >
+              <div style={styles.doctorNombre}>{getMedicoNombre(persona)}</div>
+              <span style={styles.badgeCargo}>{getMedicoCargo(persona)}</span>
+            </div>
+          ))
+        ) : seccionActiva === 'informes' ? (
+          itemsSeccion.map((inf, idx) => (
+            <div key={inf.id || idx} style={styles.itemCard}>
+              <div style={styles.doctorNombre}>{inf.informe || 'Informe sin descripción'}</div>
+              <div style={styles.cardField}>
+                <span style={styles.label}>Fecha:</span> {inf.fecha ? new Date(inf.fecha).toLocaleDateString() : 'N/A'}
+                {' · '}
+                <span style={styles.label}>Remitente:</span> {inf.remitente || 'N/A'}
+              </div>
+            </div>
+          ))
         ) : (
-          medicos.map((medico, idx) => (
-            <div key={getMedicoId(medico) || idx} className="cm-doctor-card" style={styles.doctorCard} onClick={() => irADetalleMedico(medico)}>
-              <div style={styles.doctorNombre}>{getMedicoNombre(medico)}</div>
-              <span style={styles.badgeCargo}>{getMedicoCargo(medico)}</span>
+          // maquinaria / herramientas / medicamentos
+          itemsSeccion.map((item, idx) => (
+            <div key={item.id || idx} style={styles.itemCard}>
+              <div style={styles.doctorNombre}>{item.nombre || 'Sin nombre'}</div>
+              {item.adquisicion && (
+                <div style={styles.cardField}>
+                  <span style={styles.label}>Adquisición:</span> {new Date(item.adquisicion).toLocaleDateString()}
+                </div>
+              )}
+              {item.fecha_caducidad && (
+                <div style={styles.cardField}>
+                  <span style={styles.label}>Caducidad:</span> {new Date(item.fecha_caducidad).toLocaleDateString()}
+                </div>
+              )}
             </div>
           ))
         )}
@@ -274,7 +432,7 @@ const CentrosMedicos = () => {
     return (
       <>
         <div style={styles.header}>
-          <button className="cm-back-btn" style={styles.backButton} onClick={() => irADetalleCentro(centroSeleccionado)}>←</button>
+          <button className="cm-back-btn" style={styles.backButton} onClick={() => setVista('seccion')}>←</button>
           <h2 style={styles.headerTitle}>{getMedicoNombre(medicoSeleccionado)}</h2>
         </div>
         <div style={styles.detailSection}>
@@ -326,6 +484,7 @@ const CentrosMedicos = () => {
     switch (vista) {
       case 'lista': return renderLista();
       case 'detalleCentro': return renderDetalleCentro();
+      case 'seccion': return renderSeccion();
       case 'detalleMedico': return renderDetalleMedico();
       case 'detalleSancion': return renderDetalleSancion();
       default: return renderLista();
