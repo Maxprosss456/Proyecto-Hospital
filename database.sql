@@ -40,6 +40,7 @@ CREATE TABLE public.usuarios (
   telefono character varying NOT NULL,
   email character varying NOT NULL,
   direccion character varying NOT NULL,
+  es_medico boolean,
   CONSTRAINT usuarios_pkey PRIMARY KEY (id),
   CONSTRAINT fk_posicion FOREIGN KEY (posicion) REFERENCES public.posiciones(id),
   CONSTRAINT fk_hospital FOREIGN KEY (id_hospital) REFERENCES public.hospitales(id)
@@ -92,7 +93,9 @@ CREATE TABLE public.medicamentos (
   imagen text NOT NULL,
   fecha de entrada timestamp without time zone NOT NULL,
   fecha de caducidad timestamp without time zone,
-  CONSTRAINT medicamentos_pkey PRIMARY KEY (id)
+  id_hospital integer NOT NULL,
+  CONSTRAINT medicamentos_pkey PRIMARY KEY (id),
+  CONSTRAINT medicamentos_id_hospital_fkey FOREIGN KEY (id_hospital) REFERENCES public.hospitales(id)
 );
 CREATE TABLE public.pacientes (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -119,4 +122,18 @@ CREATE TABLE public.herramientas (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   nombre text NOT NULL,
   CONSTRAINT herramientas_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.maquinaria (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  nombre text NOT NULL,
+  CONSTRAINT maquinaria_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.maquinaria_hospital (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  asquisicion timestamp with time zone NOT NULL DEFAULT now(),
+  maquinaria_id bigint NOT NULL,
+  hospital_id integer NOT NULL,
+  CONSTRAINT maquinaria_hospital_pkey PRIMARY KEY (id),
+  CONSTRAINT maquinaria_hospital_maquinaria_id_fkey FOREIGN KEY (maquinaria_id) REFERENCES public.maquinaria(id),
+  CONSTRAINT maquinaria_hospital_hospital_id_fkey FOREIGN KEY (hospital_id) REFERENCES public.hospitales(id)
 );
