@@ -106,17 +106,17 @@ CREATE TABLE public.pacientes (
   sexo smallint NOT NULL DEFAULT '1'::smallint,
   CONSTRAINT pacientes_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.maquinaria_hospital (
+CREATE TABLE public.herramienta_hospital (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   adquisición timestamp with time zone NOT NULL DEFAULT now(),
   id_hospital integer DEFAULT 1,
-  maquina bigint DEFAULT '1'::bigint,
-  CONSTRAINT maquinaria_hospital_pkey PRIMARY KEY (id),
+  herramienta bigint DEFAULT '1'::bigint,
+  CONSTRAINT herramienta_hospital_pkey PRIMARY KEY (id),
   CONSTRAINT maquinaria_id_hospital_fkey FOREIGN KEY (id_hospital) REFERENCES public.hospitales(id),
-  CONSTRAINT maquinaria_hospital_maquina_fkey FOREIGN KEY (maquina) REFERENCES public.maquinaria(id)
+  CONSTRAINT maquinaria_hospital_maquina_fkey FOREIGN KEY (herramienta) REFERENCES public.herramientas(id)
 );
-CREATE TABLE public.maquinaria (
+CREATE TABLE public.herramientas (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   nombre text NOT NULL,
-  CONSTRAINT maquinaria_pkey PRIMARY KEY (id)
+  CONSTRAINT herramientas_pkey PRIMARY KEY (id)
 );
