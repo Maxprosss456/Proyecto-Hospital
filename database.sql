@@ -1,6 +1,8 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+-- estructura de referencia de la base de datos, usar para identificar que consultar/escribir.
+
 CREATE TABLE public.posiciones (
   id integer NOT NULL,
   posicion character varying NOT NULL,
@@ -19,7 +21,7 @@ CREATE TABLE public.especialidades (
 CREATE TABLE public.hospitales (
   id integer NOT NULL,
   nombre character varying NOT NULL,
-  logo character varying NOT NULL DEFAULT '/hospital_logo.ico'::character varying,
+  logo text NOT NULL DEFAULT '/hospital_logo.ico'::text,
   telefono character varying NOT NULL,
   email character varying NOT NULL,
   codpostal integer NOT NULL,
@@ -44,19 +46,21 @@ CREATE TABLE public.usuarios (
 );
 CREATE TABLE public.sanciones (
   id integer NOT NULL,
-  id_sancionado character varying NOT NULL,
-  sancion character varying NOT NULL,
+  id_sancionado integer NOT NULL,
+  sancion text NOT NULL,
   CONSTRAINT sanciones_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_sancionado FOREIGN KEY (id_sancionado) REFERENCES public.usuarios(usuario)
+  CONSTRAINT sanciones_id_sancionado_fkey FOREIGN KEY (id_sancionado) REFERENCES public.usuarios(id)
 );
 CREATE TABLE public.informes (
-  id integer NOT NULL,
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   fecha timestamp without time zone NOT NULL,
-  id_hospital character varying NOT NULL,
+  id_hospital integer NOT NULL,
   id_remitente integer NOT NULL,
-  informe character varying NOT NULL,
+  informe text NOT NULL DEFAULT 'aaa'::text,
+  pdf text NOT NULL DEFAULT 'Documento1.pdf'::text,
   CONSTRAINT informes_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_remitente FOREIGN KEY (id_remitente) REFERENCES public.usuarios(id)
+  CONSTRAINT fk_remitente FOREIGN KEY (id_remitente) REFERENCES public.usuarios(id),
+  CONSTRAINT informes_id_hospital_fkey FOREIGN KEY (id_hospital) REFERENCES public.hospitales(id)
 );
 CREATE TABLE public.titulo_usuario (
   id_titulo integer NOT NULL,
@@ -81,4 +85,38 @@ CREATE TABLE public.situaciones_urgentes (
   CONSTRAINT situaciones_urgentes_pkey PRIMARY KEY (id),
   CONSTRAINT situaciones_urgentes_id_remitente_fkey FOREIGN KEY (id_remitente) REFERENCES public.usuarios(id),
   CONSTRAINT situaciones_urgentes_id_hospital_fkey FOREIGN KEY (id_hospital) REFERENCES public.hospitales(id)
+);
+CREATE TABLE public.medicamentos (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  nombre text NOT NULL,
+  imagen text NOT NULL,
+  fecha de entrada timestamp without time zone NOT NULL,
+  fecha de caducidad timestamp without time zone,
+  CONSTRAINT medicamentos_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.pacientes (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  ingreso timestamp with time zone NOT NULL DEFAULT now(),
+  nombre text NOT NULL DEFAULT 'juan'::text,
+  apellido text NOT NULL DEFAULT 'perez'::text,
+  dni bigint NOT NULL DEFAULT '12345678'::bigint,
+  direccion text NOT NULL DEFAULT 'dadsddwa'::text,
+  telefono text NOT NULL DEFAULT '111111111'::text,
+  email text NOT NULL DEFAULT 'a@gmail.com'::text,
+  sexo smallint NOT NULL DEFAULT '1'::smallint,
+  CONSTRAINT pacientes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.maquinaria_hospital (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  adquisición timestamp with time zone NOT NULL DEFAULT now(),
+  id_hospital integer DEFAULT 1,
+  maquina bigint DEFAULT '1'::bigint,
+  CONSTRAINT maquinaria_hospital_pkey PRIMARY KEY (id),
+  CONSTRAINT maquinaria_id_hospital_fkey FOREIGN KEY (id_hospital) REFERENCES public.hospitales(id),
+  CONSTRAINT maquinaria_hospital_maquina_fkey FOREIGN KEY (maquina) REFERENCES public.maquinaria(id)
+);
+CREATE TABLE public.maquinaria (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  nombre text NOT NULL,
+  CONSTRAINT maquinaria_pkey PRIMARY KEY (id)
 );
